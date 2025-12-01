@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_homeopathy_app/widgets/search/category_dropdown.dart';
 import 'package:flutter_homeopathy_app/widgets/search/search_by_name.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/medicine.dart';
@@ -16,7 +17,26 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool loading = true;
+
   List<Medicine> medicines = [];
+  List<Medicine> filteredMedicines = [];
+
+  String searchTerm = "";
+  String selectedCategory = "all";
+
+  List<String> categories = [
+    "all",
+    "Pain Relief",
+    "Fever",
+    "Digestive",
+    "Respiratory",
+    "Urinary",
+    "Sleep",
+    "Skin",
+    "Female",
+    "Male",
+    "General",
+  ];
 
   @override
   void initState() {
@@ -25,13 +45,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> loadMedicines() async {
-    try {
-      medicines = await MedicineService().fetchMedicines();
-    } catch (e) {
-      print("❌ Failed loading medicines: $e");
-    }
-    setState(() => loading = false);
+  try {
+    medicines = await MedicineService().fetchMedicines();
+    filteredMedicines = medicines; // initialize
+  } catch (e) {
+    print("❌ Failed loading medicines: $e");
   }
+  setState(() => loading = false);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -43,22 +64,65 @@ class _HomeScreenState extends State<HomeScreen> {
           : _body(),
     );
   }
+  void applyFilters() {
+  final term = searchTerm.toLowerCase().trim();
+
+  setState(() {
+    filteredMedicines = medicines.where((med) {
+      final name = med.remedy.toLowerCase();
+      final common = med.commonName.toLowerCase();
+      final general = med.general.toLowerCase();
+
+      final matchesSearch =
+          term.isEmpty ||
+          name.contains(term) ||
+          common.contains(term) ||
+          general.contains(term);
+
+      final matchesCategory =
+          selectedCategory == "all" ||
+          med.sections.values.join(" ").toLowerCase().contains(
+                selectedCategory.toLowerCase(),
+              );
+
+      return matchesSearch && matchesCategory;
+    }).toList();
+  });
+}
+
 
   Widget _body() {
   return ListView(
     padding: const EdgeInsets.all(16),
     children: [
 
-      // 🔍 Search Bar — now scrolls
+      // 🔍 Search Bar (scrolls)
       SearchByName(
+  onChanged: (value) {
+    searchTerm = value;
+    applyFilters();
+  },
+),
+
+
+      const SizedBox(height: 16),
+
+      // NEW: CATEGORY DROPDOWN (scrolls)
+      CategoryDropdown(
+        categories: categories,
+        selectedCategory: selectedCategory,
         onChanged: (value) {
-          // TODO: add logic later
+          setState(() {
+            selectedCategory = value ?? "all";
+          });
+
+          // TODO: filtering logic
         },
       ),
 
       const SizedBox(height: 16),
 
-      // 🌟 Medicines Header — now scrolls
+      // 🌟 Header
       const MedicinesHeader(
         title: 'All Medicines',
         description:
@@ -68,9 +132,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
       const SizedBox(height: 12),
 
-      // 📌 Count — now scrolls
+      // Showing count
       Text(
-        "Showing ${medicines.length} medicine(s)",
+        "Showing ${filteredMedicines.length} medicine(s)",
         style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.w500,
@@ -79,20 +143,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
       const SizedBox(height: 12),
 
-      // 🩺 Medicine cards — scroll as usual
-      ...medicines.map(
+      // Medicine cards
+      ...filteredMedicines.map(
         (med) => Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: MedicineCard(
             key: ValueKey("${med.remedy}_${med.commonName}"),
             medicine: med,
-            onTap: () {},
           ),
         ),
       ),
     ],
   );
 }
+
 
 
 
