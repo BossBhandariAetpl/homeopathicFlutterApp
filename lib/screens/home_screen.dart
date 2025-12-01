@@ -17,8 +17,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool loading = true;
-  List<Medicine> medicines = [];
 
+  List<Medicine> medicines = [];
+  List<Medicine> filteredMedicines = [];
+
+  String searchTerm = "";
   String selectedCategory = "all";
 
   List<String> categories = [
@@ -42,13 +45,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> loadMedicines() async {
-    try {
-      medicines = await MedicineService().fetchMedicines();
-    } catch (e) {
-      print("❌ Failed loading medicines: $e");
-    }
-    setState(() => loading = false);
+  try {
+    medicines = await MedicineService().fetchMedicines();
+    filteredMedicines = medicines; // initialize
+  } catch (e) {
+    print("❌ Failed loading medicines: $e");
   }
+  setState(() => loading = false);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +64,32 @@ class _HomeScreenState extends State<HomeScreen> {
           : _body(),
     );
   }
+  void applyFilters() {
+  final term = searchTerm.toLowerCase().trim();
+
+  setState(() {
+    filteredMedicines = medicines.where((med) {
+      final name = med.remedy.toLowerCase();
+      final common = med.commonName.toLowerCase();
+      final general = med.general.toLowerCase();
+
+      final matchesSearch =
+          term.isEmpty ||
+          name.contains(term) ||
+          common.contains(term) ||
+          general.contains(term);
+
+      final matchesCategory =
+          selectedCategory == "all" ||
+          med.sections.values.join(" ").toLowerCase().contains(
+                selectedCategory.toLowerCase(),
+              );
+
+      return matchesSearch && matchesCategory;
+    }).toList();
+  });
+}
+
 
   Widget _body() {
   return ListView(
@@ -68,10 +98,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // 🔍 Search Bar (scrolls)
       SearchByName(
-        onChanged: (value) {
-          // TODO search logic
-        },
-      ),
+  onChanged: (value) {
+    searchTerm = value;
+    applyFilters();
+  },
+),
+
 
       const SizedBox(height: 16),
 
@@ -102,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Showing count
       Text(
-        "Showing ${medicines.length} medicine(s)",
+        "Showing ${filteredMedicines.length} medicine(s)",
         style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.w500,
@@ -112,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const SizedBox(height: 12),
 
       // Medicine cards
-      ...medicines.map(
+      ...filteredMedicines.map(
         (med) => Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: MedicineCard(
