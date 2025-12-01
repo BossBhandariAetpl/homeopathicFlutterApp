@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_homeopathy_app/widgets/search/category_dropdown.dart';
 import 'package:flutter_homeopathy_app/widgets/search/search_by_name.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/medicine.dart';
@@ -17,6 +18,22 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool loading = true;
   List<Medicine> medicines = [];
+
+  String selectedCategory = "all";
+
+  List<String> categories = [
+    "all",
+    "Pain Relief",
+    "Fever",
+    "Digestive",
+    "Respiratory",
+    "Urinary",
+    "Sleep",
+    "Skin",
+    "Female",
+    "Male",
+    "General",
+  ];
 
   @override
   void initState() {
@@ -49,16 +66,31 @@ class _HomeScreenState extends State<HomeScreen> {
     padding: const EdgeInsets.all(16),
     children: [
 
-      // 🔍 Search Bar — now scrolls
+      // 🔍 Search Bar (scrolls)
       SearchByName(
         onChanged: (value) {
-          // TODO: add logic later
+          // TODO search logic
         },
       ),
 
       const SizedBox(height: 16),
 
-      // 🌟 Medicines Header — now scrolls
+      // NEW: CATEGORY DROPDOWN (scrolls)
+      CategoryDropdown(
+        categories: categories,
+        selectedCategory: selectedCategory,
+        onChanged: (value) {
+          setState(() {
+            selectedCategory = value ?? "all";
+          });
+
+          // TODO: filtering logic
+        },
+      ),
+
+      const SizedBox(height: 16),
+
+      // 🌟 Header
       const MedicinesHeader(
         title: 'All Medicines',
         description:
@@ -68,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       const SizedBox(height: 12),
 
-      // 📌 Count — now scrolls
+      // Showing count
       Text(
         "Showing ${medicines.length} medicine(s)",
         style: GoogleFonts.poppins(
@@ -79,20 +111,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
       const SizedBox(height: 12),
 
-      // 🩺 Medicine cards — scroll as usual
+      // Medicine cards
       ...medicines.map(
         (med) => Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: MedicineCard(
             key: ValueKey("${med.remedy}_${med.commonName}"),
             medicine: med,
-            onTap: () {},
           ),
         ),
       ),
     ],
   );
 }
+
 
 
 
