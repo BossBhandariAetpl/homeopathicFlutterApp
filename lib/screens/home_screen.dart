@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_homeopathy_app/widgets/search/search_by_name.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/medicine.dart';
 import '../services/medicine_service.dart';
@@ -44,45 +45,55 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _body() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: medicines.length + 2,
-      itemBuilder: (context, index) {
-        // Header Section
-        if (index == 0) {
-          return const MedicinesHeader(
-            title: 'All Medicines',
-            description: 'Explore our comprehensive collection of homeopathic remedies. '
-                'Find detailed information about symptoms, usage, and more.',
-          );
-        }
+  return ListView(
+    padding: const EdgeInsets.all(16),
+    children: [
 
-        // Count text
-        if (index == 1) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Showing ${medicines.length} medicine(s)",
-                style: GoogleFonts.poppins(
-                  fontSize: 16, 
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-          );
-        }
+      // 🔍 Search Bar — now scrolls
+      SearchByName(
+        onChanged: (value) {
+          // TODO: add logic later
+        },
+      ),
 
-        // Medicine card
-        return MedicineCard(
-          key: ValueKey('${medicines[index - 2].remedy}_${medicines[index - 2].commonName}'),
-          medicine: medicines[index - 2],
-          onTap: () {
-            // TODO: Handle medicine card tap
-          },
-        );
-      },
-    );
-  }
+      const SizedBox(height: 16),
+
+      // 🌟 Medicines Header — now scrolls
+      const MedicinesHeader(
+        title: 'All Medicines',
+        description:
+            'Explore our comprehensive collection of homeopathic remedies. '
+            'Find detailed information about symptoms, usage, and more.',
+      ),
+
+      const SizedBox(height: 12),
+
+      // 📌 Count — now scrolls
+      Text(
+        "Showing ${medicines.length} medicine(s)",
+        style: GoogleFonts.poppins(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+
+      const SizedBox(height: 12),
+
+      // 🩺 Medicine cards — scroll as usual
+      ...medicines.map(
+        (med) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: MedicineCard(
+            key: ValueKey("${med.remedy}_${med.commonName}"),
+            medicine: med,
+            onTap: () {},
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+
+
 }
