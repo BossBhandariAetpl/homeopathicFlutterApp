@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/auth_service.dart';
+import '../home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,8 +13,34 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
 
   bool showPassword = false;
+  bool loading = false;
+
+  void login() async {
+    setState(() => loading = true);
+
+    try {
+      final user = await _authService.signIn(
+        emailController.text,
+        passwordController.text,
+      );
+
+      if (user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Login failed: $e")),
+      );
+    }
+
+    setState(() => loading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      // TODO: Navigate to forgot password screen
+                      // TODO
                     },
                     child: Text(
                       "Forgot Password?",
@@ -113,9 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
-                    onPressed: () {
-                      // TODO: Add login logic
-                    },
+                    onPressed: loading ? null : login,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       elevation: 2,
@@ -123,14 +149,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: Text(
-                      "Sign In",
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: loading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text(
+                            "Sign In",
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
 
