@@ -7,6 +7,7 @@ import '../services/medicine_service.dart';
 import '../widgets/app_bar/home_app_bar.dart';
 import '../widgets/cards/medicine_card.dart';
 import '../widgets/headers/medicines_header.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,6 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String searchTerm = "";
   String selectedCategory = "all";
+
+  final user = FirebaseAuth.instance.currentUser;
 
   List<String> categories = [
     "all",
@@ -117,6 +120,12 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(16),
       children: [
         // 🔍 Search Bar
+        Text(
+          "Logged in as: ${user?.email ?? 'User'}",
+          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 16),
+
         SearchByName(
           onChanged: (value) {
             searchTerm = value;
