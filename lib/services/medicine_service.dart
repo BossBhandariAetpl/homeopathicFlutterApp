@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import '../models/medicine.dart';
 import 'api_service.dart';
 
