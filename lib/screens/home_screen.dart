@@ -9,6 +9,8 @@ import '../widgets/cards/medicine_card.dart';
 import '../widgets/headers/medicines_header.dart';
 import '../widgets/search/category_dropdown.dart';
 import '../widgets/search/search_by_name.dart';
+import '../constants/app_strings.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,11 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Medicine> _medicines = [];
   final List<Medicine> _filteredMedicines = [];
   
-  static const List<String> _categories = [
-    "all", "Pain Relief", "Fever", "Digestive",
-    "Respiratory", "Urinary", "Sleep", "Skin",
-    "Female", "Male", "General",
-  ];
+  static const List<String> _categories = AppStrings.categories;
 
   List<Medicine> get _paginatedMedicines {
     final start = (_currentPage - 1) * _itemsPerPage;

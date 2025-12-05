@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
 import '../home_screen.dart';
+
+// Shared imports
+import '../../constants/text_styles.dart';
+import '../../widgets/common/custom_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -57,79 +60,54 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // App Title
-                Text(
-                  "Welcome Back",
-                  style: GoogleFonts.poppins(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                // Title
+                Text("Welcome Back", style: AppTextStyles.title),
 
                 const SizedBox(height: 8),
 
-                Text(
-                  "Log in to continue",
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: Colors.black54,
-                  ),
-                ),
+                Text("Log in to continue", style: AppTextStyles.subtitle),
 
                 const SizedBox(height: 32),
 
-                // Email Field
-                TextField(
+                // ----------------------------
+                // Email Field (Refactored)
+                // ----------------------------
+                CustomTextField(
                   controller: emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  style: GoogleFonts.poppins(),
-                  decoration: InputDecoration(
-                    labelText: "Email",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+                  label: "Email",
+                  keyboard: TextInputType.emailAddress,
                 ),
 
                 const SizedBox(height: 16),
 
-                // Password Field
-                TextField(
+                // ----------------------------
+                // Password Field (Refactored)
+                // ----------------------------
+                CustomTextField(
                   controller: passwordController,
-                  obscureText: !showPassword,
-                  style: GoogleFonts.poppins(),
-                  decoration: InputDecoration(
-                    labelText: "Password",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  label: "Password",
+                  obscure: !showPassword,
+                  suffix: IconButton(
+                    icon: Icon(
+                      showPassword
+                          ? Icons.visibility
+                          : Icons.visibility_off,
                     ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        showPassword
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          showPassword = !showPassword;
-                        });
-                      },
-                    ),
+                    onPressed: () {
+                      setState(() => showPassword = !showPassword);
+                    },
                   ),
                 ),
 
                 const SizedBox(height: 10),
 
-                // Forgot Password
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {
-                      // TODO
-                    },
+                    onPressed: () {},
                     child: Text(
                       "Forgot Password?",
-                      style: GoogleFonts.poppins(
+                      style: AppTextStyles.body.copyWith(
                         color: Theme.of(context).primaryColor,
                       ),
                     ),
@@ -138,7 +116,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 20),
 
+                // ----------------------------
                 // Login Button
+                // ----------------------------
                 SizedBox(
                   width: double.infinity,
                   height: 55,
@@ -155,10 +135,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? const CircularProgressIndicator(color: Colors.white)
                         : Text(
                             "Sign In",
-                            style: GoogleFonts.poppins(
-                              color: Theme.of(context).primaryColor,
+                            style: AppTextStyles.label.copyWith(
                               fontSize: 18,
-                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
                             ),
                           ),
                   ),
@@ -166,20 +145,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 20),
 
+                // ----------------------------
                 // Create Account
+                // ----------------------------
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      "Don't have an account?",
-                      ),
+                    Text("Don't have an account?", style: AppTextStyles.body),
                     TextButton(
-                      onPressed: () {
-                        // TODO: Implement sign up navigation
-                      },
+                      onPressed: () {},
                       child: Text(
                         "Sign Up",
-                        style: GoogleFonts.poppins(
+                        style: AppTextStyles.body.copyWith(
                           color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.w600,
                         ),
