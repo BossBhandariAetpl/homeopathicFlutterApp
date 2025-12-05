@@ -13,70 +13,93 @@ class CategoryDropdown extends StatelessWidget {
     this.onChanged,
   });
 
+  static const _borderRadius = 8.0;
+  static const _menuMaxHeight = 300.0;
+  static const _itemHeight = 48.0;
+  static const _dropdownHeight = 50.0;
+  static const _padding = 12.0;
+  static const _verticalPadding = 8.0;
+  
+  static const _textStyle = TextStyle(
+    fontSize: 14,
+    color: Color(0xFF1E293B),
+  );
+  
+  static const _activeTextStyle = TextStyle(
+    fontSize: 14,
+    color: Color(0xFF4F46E5),
+    fontWeight: FontWeight.w600,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Filter by Category",
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF334155),
-          ),
-        ),
-
+        _buildTitle(),
         const SizedBox(height: 8),
-
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          height: 50,  // Fixed height for the dropdown container
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0x1A000000)),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: selectedCategory,
-              isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B)),
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: const Color(0xFF1E293B),
-              ),
-              dropdownColor: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              elevation: 4,
-              menuMaxHeight: 300,
-              isDense: false,  // Changed to false to allow full height
-              itemHeight: 48,  // Height of each dropdown item
-              items: categories.map((category) {
-                return DropdownMenuItem(
-                  value: category,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      category[0].toUpperCase() + category.substring(1),
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: selectedCategory == category 
-                            ? const Color(0xFF4F46E5) 
-                            : const Color(0xFF1E293B),
-                        fontWeight: selectedCategory == category 
-                            ? FontWeight.w600 
-                            : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-              onChanged: onChanged,
-            ),
-          ),
-        ),
+        _buildDropdown(),
       ],
     );
+  }
+  
+  Widget _buildTitle() {
+    return Text(
+      "Filter by Category",
+      style: GoogleFonts.inter(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: const Color(0xFF334155),
+      ),
+    );
+  }
+  
+  Widget _buildDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: _padding),
+      height: _dropdownHeight,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(_borderRadius),
+        border: Border.all(color: const Color(0x1A000000)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selectedCategory,
+          isExpanded: true,
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: Color(0xFF64748B),
+          ),
+          style: _textStyle,
+          dropdownColor: Colors.white,
+          borderRadius: BorderRadius.circular(_borderRadius),
+          elevation: 4,
+          menuMaxHeight: _menuMaxHeight,
+          isDense: false,
+          itemHeight: _itemHeight,
+          items: _buildDropdownItems(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+  
+  List<DropdownMenuItem<String>> _buildDropdownItems() {
+    return categories.map((category) {
+      final isSelected = selectedCategory == category;
+      return DropdownMenuItem(
+        value: category,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: _verticalPadding),
+          child: Text(
+            category.isNotEmpty 
+                ? '${category[0].toUpperCase()}${category.substring(1)}'
+                : category,
+            style: isSelected ? _activeTextStyle : _textStyle,
+          ),
+        ),
+      );
+    }).toList();
   }
 }

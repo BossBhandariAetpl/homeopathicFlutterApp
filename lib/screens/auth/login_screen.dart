@@ -34,12 +34,16 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login failed: $e")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Login failed: $e")),
+        );
+      }
     }
 
-    setState(() => loading = false);
+    if (mounted) {
+      setState(() => loading = false);
+    }
   }
 
   @override
@@ -81,7 +85,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: GoogleFonts.poppins(),
                   decoration: InputDecoration(
                     labelText: "Email",
-                    labelStyle: GoogleFonts.poppins(),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -97,7 +100,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: GoogleFonts.poppins(),
                   decoration: InputDecoration(
                     labelText: "Password",
-                    labelStyle: GoogleFonts.poppins(),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -128,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(
                       "Forgot Password?",
                       style: GoogleFonts.poppins(
-                        color: Colors.blue,
+                        color: Theme.of(context).primaryColor,
                       ),
                     ),
                   ),
@@ -143,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: loading ? null : login,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Theme.of(context).primaryColor,
                       elevation: 2,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -154,9 +156,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         : Text(
                             "Sign In",
                             style: GoogleFonts.poppins(
-                              color: Colors.white,
+                              color: Theme.of(context).primaryColor,
                               fontSize: 18,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                   ),
@@ -170,16 +172,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text(
                       "Don't have an account?",
-                      style: GoogleFonts.poppins(),
-                    ),
+                      ),
                     TextButton(
                       onPressed: () {
-                        // TODO: Navigate to Sign Up screen
+                        // TODO: Implement sign up navigation
                       },
                       child: Text(
                         "Sign Up",
                         style: GoogleFonts.poppins(
-                          color: Colors.blue,
+                          color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

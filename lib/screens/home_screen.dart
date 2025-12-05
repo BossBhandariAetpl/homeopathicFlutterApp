@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_homeopathy_app/widgets/search/category_dropdown.dart';
-import 'package:flutter_homeopathy_app/widgets/search/search_by_name.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../models/medicine.dart';
 import '../services/medicine_service.dart';
 import '../widgets/app_bar/home_app_bar.dart';
 import '../widgets/cards/medicine_card.dart';
 import '../widgets/headers/medicines_header.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../widgets/search/category_dropdown.dart';
+import '../widgets/search/search_by_name.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,60 +18,52 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool loading = true;
-
-  int currentPage = 1;
-  int itemsPerPage = 12;
-
-  List<Medicine> medicines = [];
-  List<Medicine> filteredMedicines = [];
-
-  String searchTerm = "";
-  String selectedCategory = "all";
-
-  final user = FirebaseAuth.instance.currentUser;
-
-  List<String> categories = [
-    "all",
-    "Pain Relief",
-    "Fever",
-    "Digestive",
-    "Respiratory",
-    "Urinary",
-    "Sleep",
-    "Skin",
-    "Female",
-    "Male",
-    "General",
+  final _user = FirebaseAuth.instance.currentUser;
+  bool _loading = true;
+  
+  int _currentPage = 1;
+  int _itemsPerPage = 12;
+  String _searchTerm = "";
+  String _selectedCategory = "all";
+  
+  final List<Medicine> _medicines = [];
+  final List<Medicine> _filteredMedicines = [];
+  
+  static const List<String> _categories = [
+    "all", "Pain Relief", "Fever", "Digestive",
+    "Respiratory", "Urinary", "Sleep", "Skin",
+    "Female", "Male", "General",
   ];
 
-  // PAGINATION — return only X items of current page
-  List<Medicine> get paginatedMedicines {
-    int start = (currentPage - 1) * itemsPerPage;
-    int end = start + itemsPerPage;
-
-    if (start >= filteredMedicines.length) return [];
-
-    return filteredMedicines.sublist(
-      start,
-      end > filteredMedicines.length ? filteredMedicines.length : end,
-    );
+  List<Medicine> get _paginatedMedicines {
+    final start = (_currentPage - 1) * _itemsPerPage;
+    if (start >= _filteredMedicines.length) return [];
+    
+    final end = start + _itemsPerPage > _filteredMedicines.length
+        ? _filteredMedicines.length
+        : start + _itemsPerPage;
+        
+    return _filteredMedicines.sublist(start, end);
   }
 
   @override
   void initState() {
     super.initState();
-    loadMedicines();
+    _loadMedicines();
   }
 
-  Future<void> loadMedicines() async {
+  Future<void> _loadMedicines() async {
     try {
-      medicines = await MedicineService().fetchMedicines();
-      filteredMedicines = medicines;
+      final fetchedMedicines = await MedicineService().fetchMedicines();
+      setState(() {
+        _medicines.addAll(fetchedMedicines);
+        _filteredMedicines.addAll(fetchedMedicines);
+        _loading = false;
+      });
     } catch (e) {
-      print("❌ Failed loading medicines: $e");
+      debugPrint("❌ Failed to load medicines: $e");
+      setState(() => _loading = false);
     }
-    setState(() => loading = false);
   }
 
   @override
@@ -78,122 +71,106 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const HomeAppBar(),
-      body: loading
+      body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : _body(),
+          : _buildBody(),
     );
   }
 
-  // FILTERS
-  void applyFilters() {
-    final term = searchTerm.toLowerCase().trim();
-
+  void _applyFilters() {
+    final term = _searchTerm.toLowerCase().trim();
+    
     setState(() {
-      filteredMedicines = medicines.where((med) {
-        final name = med.remedy.toLowerCase();
-        final common = med.commonName.toLowerCase();
-        final general = med.general.toLowerCase();
-
-        final matchesSearch =
-            term.isEmpty ||
-            name.contains(term) ||
-            common.contains(term) ||
-            general.contains(term);
-
-        final matchesCategory =
-            selectedCategory == "all" ||
+      _filteredMedicines.clear();
+      _filteredMedicines.addAll(_medicines.where((med) {
+        final matchesSearch = term.isEmpty ||
+            med.remedy.toLowerCase().contains(term) ||
+            med.commonName.toLowerCase().contains(term) ||
+            med.general.toLowerCase().contains(term);
+            
+        final matchesCategory = _selectedCategory == "all" ||
             med.sections.values
                 .join(" ")
                 .toLowerCase()
-                .contains(selectedCategory.toLowerCase());
-
+                .contains(_selectedCategory.toLowerCase());
+                
         return matchesSearch && matchesCategory;
-      }).toList();
-
-      currentPage = 1; // Reset page after filter
+      }));
+      
+      _currentPage = 1; // Reset to first page after filtering
     });
   }
 
-  // MAIN BODY
-  Widget _body() {
+  Widget _buildBody() {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // 🔍 Search Bar
         Text(
-          "Logged in as: ${user?.email ?? 'User'}",
-          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 16),
-
-        SearchByName(
-          onChanged: (value) {
-            searchTerm = value;
-            applyFilters();
-          },
-        ),
-
-        const SizedBox(height: 16),
-
-        // CATEGORY DROPDOWN
-        CategoryDropdown(
-          categories: categories,
-          selectedCategory: selectedCategory,
-          onChanged: (value) {
-            selectedCategory = value ?? "all";
-            applyFilters();
-          },
-        ),
-
-        const SizedBox(height: 16),
-
-        // HEADER
-        const MedicinesHeader(
-          title: 'All Medicines',
-          description:
-              'Explore our comprehensive collection of homeopathic remedies. '
-              'Find detailed information about symptoms, usage, and more.',
-        ),
-
-        const SizedBox(height: 12),
-
-        // Showing count
-        Text(
-          "Showing ${paginatedMedicines.length} of ${filteredMedicines.length} medicines",
-          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-
-        const SizedBox(height: 12),
-
-        // SHOW PAGINATED CARDS ONLY
-        ...paginatedMedicines.map(
-          (med) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: MedicineCard(
-              key: ValueKey("${med.remedy}_${med.commonName}"),
-              medicine: med,
-            ),
+          "Logged in as: ${_user?.email ?? 'User'}",
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
           ),
         ),
-
+        const SizedBox(height: 16),
+        
+        SearchByName(
+          onChanged: (value) {
+            _searchTerm = value;
+            _applyFilters();
+          },
+        ),
+        
+        const SizedBox(height: 16),
+        
+        CategoryDropdown(
+          categories: _categories,
+          selectedCategory: _selectedCategory,
+          onChanged: (value) {
+            _selectedCategory = value ?? "all";
+            _applyFilters();
+          },
+        ),
+        
+        const SizedBox(height: 16),
+        const MedicinesHeader(
+          title: 'All Medicines',
+          description: 'Explore our comprehensive collection of homeopathic remedies. '
+              'Find detailed information about symptoms, usage, and more.',
+        ),
+        
+        const SizedBox(height: 12),
+        Text(
+          "Showing ${_paginatedMedicines.length} of ${_filteredMedicines.length} medicines",
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        
+        const SizedBox(height: 12),
+        ..._paginatedMedicines.map((med) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: MedicineCard(
+            key: ValueKey("${med.remedy}_${med.commonName}"),
+            medicine: med,
+          ),
+        )),
+        
         const SizedBox(height: 20),
-
-        // PAGINATION BAR
-        paginationBar(),
+        _buildPaginationBar(),
       ],
     );
   }
 
-  // PAGINATION BAR EXACT LIKE WEBSITE
-  Widget paginationBar() {
-    if (filteredMedicines.isEmpty) return const SizedBox();
+  Widget _buildPaginationBar() {
+    if (_filteredMedicines.isEmpty) return const SizedBox();
 
-    int totalPages = ((filteredMedicines.length - 1) / itemsPerPage).ceil();
-
-    int showingFrom = ((currentPage - 1) * itemsPerPage) + 1;
-    int showingTo = (currentPage * itemsPerPage > filteredMedicines.length)
-        ? filteredMedicines.length
-        : currentPage * itemsPerPage;
+    final totalPages = ((_filteredMedicines.length - 1) / _itemsPerPage).ceil();
+    final showingFrom = ((_currentPage - 1) * _itemsPerPage) + 1;
+    final showingTo = _currentPage * _itemsPerPage > _filteredMedicines.length
+        ? _filteredMedicines.length
+        : _currentPage * _itemsPerPage;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -201,94 +178,83 @@ class _HomeScreenState extends State<HomeScreen> {
         color: const Color(0xffeef1ff),
         borderRadius: BorderRadius.circular(12),
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Showing X–Y of Z
           Text(
-            "Showing $showingFrom-$showingTo of ${filteredMedicines.length}",
+            "Showing $showingFrom-$showingTo of ${_filteredMedicines.length}",
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
-
           const SizedBox(height: 12),
-
-          // Wrap instead of Row => NO OVERFLOW
           Wrap(
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
             runSpacing: 10,
             children: [
-              // PER PAGE DROPDOWN
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text("Per page: "),
-                  const SizedBox(width: 6),
-
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.green),
-                      borderRadius: BorderRadius.circular(6),
-                      color: Colors.white,
-                    ),
-                    child: DropdownButton<int>(
-                      value: itemsPerPage,
-                      underline: const SizedBox(),
-                      items: [12, 24, 48, 96].map((e) {
-                        return DropdownMenuItem(value: e, child: Text("$e"));
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          itemsPerPage = value!;
-                          currentPage = 1;
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-
-              // PAGINATION BUTTONS
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.first_page),
-                    onPressed: currentPage > 1
-                        ? () => setState(() => currentPage = 1)
-                        : null,
-                  ),
-
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left),
-                    onPressed: currentPage > 1
-                        ? () => setState(() => currentPage--)
-                        : null,
-                  ),
-
-                  Text("Page $currentPage of $totalPages"),
-
-                  IconButton(
-                    icon: const Icon(Icons.chevron_right),
-                    onPressed: currentPage < totalPages
-                        ? () => setState(() => currentPage++)
-                        : null,
-                  ),
-
-                  IconButton(
-                    icon: const Icon(Icons.last_page),
-                    onPressed: currentPage < totalPages
-                        ? () => setState(() => currentPage = totalPages)
-                        : null,
-                  ),
-                ],
-              ),
+              _buildItemsPerPageDropdown(),
+              _buildPageNavigation(totalPages),
             ],
           ),
         ],
       ),
+    );
+  }
+  
+  Widget _buildItemsPerPageDropdown() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text("Per page: "),
+        const SizedBox(width: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.green),
+            borderRadius: BorderRadius.circular(6),
+            color: Colors.white,
+          ),
+          child: DropdownButton<int>(
+            value: _itemsPerPage,
+            underline: const SizedBox(),
+            items: [12, 24, 48, 96]
+                .map((e) => DropdownMenuItem(value: e, child: Text("$e")))
+                .toList(),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _itemsPerPage = value;
+                  _currentPage = 1;
+                });
+              }
+            },
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildPageNavigation(int totalPages) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.first_page),
+          onPressed: _currentPage > 1 ? () => setState(() => _currentPage = 1) : null,
+        ),
+        IconButton(
+          icon: const Icon(Icons.chevron_left),
+          onPressed: _currentPage > 1 ? () => setState(() => _currentPage--) : null,
+        ),
+        Text("Page $_currentPage of $totalPages"),
+        IconButton(
+          icon: const Icon(Icons.chevron_right),
+          onPressed: _currentPage < totalPages ? () => setState(() => _currentPage++) : null,
+        ),
+        IconButton(
+          icon: const Icon(Icons.last_page),
+          onPressed: _currentPage < totalPages ? () => setState(() => _currentPage = totalPages) : null,
+        ),
+      ],
     );
   }
 }
