@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter/material.dart' show showMenu, RelativeRect;
-import 'dart:ui' show Shader, ShaderMask, BlendMode, SystemMouseCursors;
 
 // ⬇️ Add these imports
 import 'package:flutter_homeopathy_app/screens/auth/login_screen.dart';
