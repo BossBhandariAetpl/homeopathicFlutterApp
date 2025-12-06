@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_homeopathy_app/screens/doctor_home_screen.dart';
 import '../../services/auth_service.dart';
 import '../home_screen.dart';
 
@@ -31,22 +32,32 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
+        final role = await _authService.getUserRole(user.uid);
+
+        if (role == "doctor") {
+          Future.microtask(() {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const DoctorHomeScreen()),
+            );
+          });
+        }
+
+        // fallback home
+        Future.microtask(() {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
+        });
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Login failed: $e")),
-        );
-      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Login failed: $e")));
     }
 
-    if (mounted) {
-      setState(() => loading = false);
-    }
+    setState(() => loading = false);
   }
 
   @override
@@ -89,9 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   obscure: !showPassword,
                   suffix: IconButton(
                     icon: Icon(
-                      showPassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
+                      showPassword ? Icons.visibility : Icons.visibility_off,
                     ),
                     onPressed: () {
                       setState(() => showPassword = !showPassword);
@@ -161,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ],
