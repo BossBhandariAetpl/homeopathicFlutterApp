@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_homeopathy_app/widgets/search/doctor_patients_screen.dart';
-
 import '../../screens/doctor_home_screen.dart';
 import '../../screens/doctor_profile_screen.dart';
+import '../../screens/patient_management_screen.dart';
 // import '../../screens/doctor_appointments_screen.dart';  // create later
 
 class DoctorNavbar extends StatelessWidget implements PreferredSizeWidget {
@@ -85,7 +84,7 @@ class DoctorNavbar extends StatelessWidget implements PreferredSizeWidget {
               case 2: // Patients
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (_) => const DoctorPatientsScreen()),
+                  MaterialPageRoute(builder: (_) => const PatientManagementScreen()),
                 );
                 break;
 
