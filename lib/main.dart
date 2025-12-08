@@ -20,20 +20,19 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const AuthWrapper(),
+      home: const StartupWrapper(),
     );
   }
 }
 
-class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
+class StartupWrapper extends StatelessWidget {
+  const StartupWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        // Still loading
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
@@ -42,10 +41,12 @@ class AuthWrapper extends StatelessWidget {
 
         final user = snapshot.data;
 
-        // ❌ Not logged in → go to Login
-        if (user == null) return const LoginScreen();
+        if (user == null) {
+          // 🔥 Not logged in → still show HomeScreen (NOT LoginScreen)
+          return const HomeScreen();
+        }
 
-        // ✔ Logged in → determine role
+        // 🔥 Logged in → load correct role screen
         return FutureBuilder<String?>(
           future: AuthService().getUserRole(user.uid),
           builder: (context, roleSnapshot) {
