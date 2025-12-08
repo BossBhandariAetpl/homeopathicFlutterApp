@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../models/medicine.dart';
 import '../services/medicine_service.dart';
 import '../widgets/cards/medicine_card.dart';
@@ -20,7 +17,7 @@ class DoctorHomeScreen extends StatefulWidget {
 }
 
 class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
-  final _user = FirebaseAuth.instance.currentUser;
+  // final _user = FirebaseAuth.instance.currentUser;
 
   bool _loading = true;
 
