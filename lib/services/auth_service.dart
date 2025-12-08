@@ -36,6 +36,22 @@ class AuthService {
     }
   }
 
+  Future<Map<String, dynamic>?> getUserProfile(String uid) async {
+    try {
+      final response = await dio.get("/users/$uid");
+      final data = response.data["data"];
+      if (data == null) return null;
+      return {
+        "name": data["name"],
+        "email": data["email"],
+        "roles": data["roles"],
+        "emailVerified": data["emailVerified"],
+      };
+    } catch (e) {
+      throw "Failed to get user profile: $e";
+    }
+  }
+
   /// Helper to get current logged-in Firebase user
   User? get currentUser => _auth.currentUser;
 
