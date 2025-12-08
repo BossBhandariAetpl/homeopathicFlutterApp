@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../models/medicine.dart';
@@ -20,7 +19,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _user = FirebaseAuth.instance.currentUser;
+  // final _user = FirebaseAuth.instance.currentUser;
   bool _loading = true;
   
   int _currentPage = 1;
