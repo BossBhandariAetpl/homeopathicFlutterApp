@@ -22,42 +22,51 @@ class _LoginScreenState extends State<LoginScreen> {
   bool showPassword = false;
   bool loading = false;
 
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   void login() async {
+    if (emailController.text.trim().isEmpty || 
+        passwordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all fields")),
+      );
+      return;
+    }
+
     setState(() => loading = true);
 
     try {
       final user = await _authService.signIn(
-        emailController.text,
-        passwordController.text,
+        emailController.text.trim(),
+        passwordController.text.trim(),
       );
 
       if (user != null) {
         final role = await _authService.getUserRole(user.uid);
-
-        if (role == "doctor") {
-          Future.microtask(() {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const DoctorHomeScreen()),
-            );
-          });
-        }
-
-        // fallback home
+        
         Future.microtask(() {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            MaterialPageRoute(
+              builder: (_) => role == "doctor" 
+                ? const DoctorHomeScreen() 
+                : const HomeScreen(),
+            ),
           );
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Login failed: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Login failed: $e")),
+      );
+    } finally {
+      setState(() => loading = false);
     }
-
-    setState(() => loading = false);
   }
 
   @override
@@ -113,7 +122,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Password reset coming soon!")),
+                      );
+                    },
                     child: Text(
                       "Forgot Password?",
                       style: AppTextStyles.body.copyWith(
@@ -162,7 +175,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text("Don't have an account?", style: AppTextStyles.body),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Sign up coming soon!")),
+                        );
+                      },
                       child: Text(
                         "Sign Up",
                         style: AppTextStyles.body.copyWith(
