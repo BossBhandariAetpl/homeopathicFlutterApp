@@ -154,38 +154,50 @@ class DoctorNavbar extends StatelessWidget implements PreferredSizeWidget {
             // --------------------------
             //  USER PROFILE GROUP
             // --------------------------
-            const PopupMenuItem(
-              value: 998,
-              enabled: false,
-              child: Text(
-                "User",
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ),
-
-            const PopupMenuItem(
-              value: 997,
-              enabled: false,
-              child: ListTile(
-                leading: CircleAvatar(radius: 14, child: Text("👨‍⚕️")),
-                title: Text("Current User: Doctor"),
-                horizontalTitleGap: 0,
-              ),
-            ),
-
-            const PopupMenuItem(
-              value: 10,
-              child: ListTile(
-                leading: Icon(Icons.person, color: Colors.black87),
-                title: Text("My Profile"),
-              ),
-            ),
-
             PopupMenuItem(
-              value: 11,
-              child: ListTile(
-                leading: Icon(Icons.logout, color: Colors.red.shade700),
-                title: const Text("Sign Out"),
+              enabled: false,
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  dividerColor: Colors.transparent,
+                  splashColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                ),
+                child: ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  childrenPadding: EdgeInsets.zero,
+                  title: const Text(
+                    "Doctor",
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  trailing: const Icon(Icons.keyboard_arrow_down, size: 20, color: Colors.grey),
+                  children: [
+                    const ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(radius: 14, child: Text("👨‍⚕️")),
+                      title: Text("Signed in as: Doctor"),
+                      horizontalTitleGap: 0,
+                      enabled: false,
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.person, color: Colors.black87),
+                      title: const Text("My Profile"),
+                      onTap: () {
+                        Navigator.pop(context); // close popup menu
+                        // TODO: open profile when implemented
+                      },
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(Icons.logout, color: Colors.red.shade700),
+                      title: const Text("Sign Out"),
+                      onTap: () async {
+                        Navigator.pop(context); // close popup menu
+                        await _auth.signOut();
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
