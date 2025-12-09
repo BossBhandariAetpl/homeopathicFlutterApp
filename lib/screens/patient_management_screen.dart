@@ -477,24 +477,519 @@ class _AddPatientPlaceholderState extends State<_AddPatientPlaceholder> {
   }
 }
 
-class _CreatePrescriptionPlaceholder extends StatelessWidget {
-  const _CreatePrescriptionPlaceholder();
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Create Prescription')),
-      body: const Center(child: Text('Create Prescription screen - TODO')),
-    );
+class _Medicine {
+  final String id;
+  final TextEditingController nameController;
+  final TextEditingController dosageController;
+  final TextEditingController frequencyController;
+  final TextEditingController durationController;
+  final TextEditingController instructionsController;
+
+  _Medicine()
+      : id = DateTime.now().millisecondsSinceEpoch.toString(),
+        nameController = TextEditingController(),
+        dosageController = TextEditingController(),
+        frequencyController = TextEditingController(),
+        durationController = TextEditingController(),
+        instructionsController = TextEditingController();
+
+  void dispose() {
+    nameController.dispose();
+    dosageController.dispose();
+    frequencyController.dispose();
+    durationController.dispose();
+    instructionsController.dispose();
   }
 }
 
-class _AllPatientsPlaceholder extends StatelessWidget {
-  const _AllPatientsPlaceholder();
+class _CreatePrescriptionPlaceholder extends StatefulWidget {
+  const _CreatePrescriptionPlaceholder();
+
+  @override
+  _CreatePrescriptionPlaceholderState createState() => _CreatePrescriptionPlaceholderState();
+}
+
+class _CreatePrescriptionPlaceholderState extends State<_CreatePrescriptionPlaceholder> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _diagnosisController = TextEditingController();
+  final TextEditingController _notesController = TextEditingController();
+  final List<_Medicine> _medicines = [];
+  String? _selectedPatient;
+  final List<Map<String, String>> _patients = [];
+  final _authService = AuthService();
+  String _doctorName = 'Loading...';
+  String _doctorEmail = 'Loading...';
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDoctorInfo();
+    _fetchPatients();
+    // Add first medicine by default
+    _addMedicine();
+  }
+
+  Future<void> _fetchDoctorInfo() async {
+    try {
+      final user = _authService.currentUser;
+      if (user != null) {
+        final profile = await _authService.getUserProfile(user.uid);
+        setState(() {
+          _doctorName = profile?['name'] ?? user.displayName ?? 'Doctor';
+          _doctorEmail = user.email ?? 'No email';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _doctorName = 'Doctor';
+        _doctorEmail = 'Error loading email';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _fetchPatients() async {
+    // TODO: Replace with actual patient fetching logic
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (mounted) {
+      setState(() {
+        _patients.addAll([
+          {'id': '1', 'name': 'John Doe'},
+          {'id': '2', 'name': 'Jane Smith'},
+          {'id': '3', 'name': 'Robert Johnson'},
+        ]);
+      });
+    }
+  }
+
+  void _addMedicine() {
+    setState(() {
+      _medicines.add(_Medicine());
+    });
+  }
+
+  void _removeMedicine(String id) {
+    if (_medicines.length <= 1) return; // Keep at least one medicine
+    
+    setState(() {
+      final index = _medicines.indexWhere((m) => m.id == id);
+      if (index != -1) {
+        _medicines[index].dispose();
+        _medicines.removeAt(index);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _diagnosisController.dispose();
+    _notesController.dispose();
+    for (var medicine in _medicines) {
+      medicine.dispose();
+    }
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('All Patients')),
-      body: const Center(child: Text('All Patients screen - TODO')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('Create Prescription'),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Doctor Information
+                    _buildSectionHeader('Doctor Information'),
+                    _buildInfoBox([
+                      'Name: $_doctorName',
+                      'Email: $_doctorEmail',
+                    ]),
+                    const SizedBox(height: 24),
+
+                    // Patient Information
+                    _buildSectionHeader('Patient Information'),
+                    _buildPatientDropdown(),
+                    const SizedBox(height: 16),
+
+                    // Diagnosis
+                    _buildSectionHeader('Diagnosis'),
+                    TextFormField(
+                      controller: _diagnosisController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: 'Enter diagnosis...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        contentPadding: const EdgeInsets.all(12),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Notes / Advice
+                    _buildSectionHeader('Notes / Advice'),
+                    TextFormField(
+                      controller: _notesController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: 'Additional instructions...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        contentPadding: const EdgeInsets.all(12),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Medicines
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildSectionHeader('Medicines'),
+                        TextButton.icon(
+                          onPressed: _addMedicine,
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Add Medicine'),
+                        ),
+                      ],
+                    ),
+                    ..._buildMedicineForms(),
+                    const SizedBox(height: 24),
+
+                    // Action Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              side: const BorderSide(color: Colors.grey),
+                            ),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                // TODO: Handle form submission
+                                print('Prescription submitted');
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0E9B95),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: const Text('Save Prescription'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildInfoBox(List<String> infoLines) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: infoLines
+            .map((line) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2.0),
+                  child: Text(line),
+                ))
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildPatientDropdown() {
+    return DropdownButtonFormField<String>(
+      value: _selectedPatient,
+      decoration: InputDecoration(
+        labelText: 'Select Patient',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+      hint: const Text('-- Choose patient --'),
+      items: _patients.map((patient) {
+        return DropdownMenuItem(
+          value: patient['id'],
+          child: Text(patient['name'] ?? ''),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedPatient = value;
+        });
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select a patient';
+        }
+        return null;
+      },
+    );
+  }
+
+  List<Widget> _buildMedicineForms() {
+    return _medicines.map((medicine) {
+      return Card(
+        margin: const EdgeInsets.only(bottom: 16),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Medicine ${_medicines.indexOf(medicine) + 1}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  if (_medicines.length > 1)
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      onPressed: () => _removeMedicine(medicine.id),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: medicine.nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  hintText: 'Medicine name',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter medicine name';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: medicine.dosageController,
+                      decoration: const InputDecoration(
+                        labelText: 'Dosage',
+                        hintText: 'e.g., 30C',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Required';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: medicine.frequencyController,
+                      decoration: const InputDecoration(
+                        labelText: 'Frequency',
+                        hintText: 'e.g., 3x daily',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Required';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: medicine.durationController,
+                      decoration: const InputDecoration(
+                        labelText: 'Duration',
+                        hintText: 'e.g., 7 days',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Required';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: medicine.instructionsController,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Instructions',
+                  hintText: 'Special instructions (e.g., before meals)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+  }
+}
+
+class _AllPatientsPlaceholder extends StatefulWidget {
+  const _AllPatientsPlaceholder();
+
+  @override
+  _AllPatientsPlaceholderState createState() => _AllPatientsPlaceholderState();
+}
+
+class _AllPatientsPlaceholderState extends State<_AllPatientsPlaceholder> {
+  final TextEditingController _searchController = TextEditingController();
+  String? _selectedGender;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('All Patients'),
+        elevation: 0,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Search and Filter Row
+            Row(
+              children: [
+                // Search Card
+                Expanded(
+                  child: Card(
+                    elevation: 2,
+                    child: TextFormField(
+                      controller: _searchController,
+                      decoration: const InputDecoration(
+                        hintText: 'Search patients by name, contact, or email...',
+                        prefixIcon: Icon(Icons.search),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      onChanged: (value) {
+                        // TODO: Implement search functionality
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Gender Filter Card
+                Card(
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedGender,
+                        hint: const Text('Filter by Gender:'),
+                        items: <String>['Male', 'Female', 'Other']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedGender = newValue;
+                            // TODO: Implement gender filter
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            // No Patients Found Message
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.people_outline,
+                      size: 80,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No Patients Found',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Try adjusting your search or add a new patient',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
