@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../models/medicine.dart';
-import '../services/medicine_service.dart';
+import '../../models/medicine.dart';
+import '../../services/medicine_service.dart';
 
 // Widgets
-import '../widgets/cards/medicine_card.dart';
-import '../widgets/headers/medicines_header.dart';
-import '../widgets/search/category_dropdown.dart';
-import '../widgets/search/search_by_name.dart';
-import '../widgets/doctor/doctor_navbar.dart';
+import '../../widgets/cards/medicine_card.dart';
+import '../../widgets/headers/medicines_header.dart';
+import '../../widgets/search/category_dropdown.dart';
+import '../../widgets/search/search_by_name.dart';
+import '../../widgets/doctor/doctor_navbar.dart';
 
 // Constants
-import '../constants/app_strings.dart';
+import '../../constants/app_strings.dart';
 
 class DoctorHomeScreen extends StatefulWidget {
   const DoctorHomeScreen({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../screens/doctor_home_screen.dart';
+import '../../screens/doctor/doctor_home_screen.dart';
 import '../../screens/doctor_profile_screen.dart';
 import '../../screens/patient_management_screen.dart';
 // import '../../screens/doctor_appointments_screen.dart';  // create later
