@@ -1,11 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_homeopathy_app/screens/doctor_home_screen.dart';
+import 'package:flutter_homeopathy_app/screens/doctor/doctor_home_screen.dart';
+import 'package:flutter_homeopathy_app/screens/patient/patient_home_screen.dart';
 import '../../services/auth_service.dart';
-import '../home_screen.dart';
 
 // Shared imports
 import '../../constants/text_styles.dart';
 import '../../widgets/common/custom_text_field.dart';
+
+// Fallback home screen
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Home'),
+        centerTitle: true,
+      ),
+      body: const Center(
+        child: Text('Welcome to Home Screen'),
+      ),
+    );
+  }
+}
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -41,31 +59,69 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => loading = true);
 
     try {
+      // Sign in with email and password
       final user = await _authService.signIn(
         emailController.text.trim(),
         passwordController.text.trim(),
       );
 
       if (user != null) {
-        final role = await _authService.getUserRole(user.uid);
+        // Get user profile to determine role
+        final profile = await _authService.getUserProfile(user.uid);
         
+        if (profile == null) {
+          throw Exception('User profile not found');
+        }
+
+        final roles = profile['roles'] as List<dynamic>?;
+        
+        if (roles == null || roles.isEmpty) {
+          throw Exception('User has no assigned role');
+        }
+
+        // Navigate based on user role
         Future.microtask(() {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => role == "doctor" 
-                ? const DoctorHomeScreen() 
-                : const HomeScreen(),
-            ),
-          );
+          if (roles.contains('doctor')) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const DoctorHomeScreen()),
+            );
+          } else if (roles.contains('patient')) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const PatientHomeScreen()),
+            );
+          } else {
+            // Default fallback for other roles
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+            );
+          }
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login failed: $e")),
-      );
+      // Handle specific error cases
+      String errorMessage = 'Login failed';
+      
+      if (e.toString().contains('user-not-found') || 
+          e.toString().contains('wrong-password')) {
+        errorMessage = 'Invalid email or password';
+      } else if (e.toString().contains('network-request-failed')) {
+        errorMessage = 'Network error. Please check your connection';
+      } else {
+        errorMessage = e.toString();
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      }
     } finally {
-      setState(() => loading = false);
+      if (mounted) {
+        setState(() => loading = false);
+      }
     }
   }
 
