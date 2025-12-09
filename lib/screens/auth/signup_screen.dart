@@ -20,6 +20,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool showPassword = false;
   bool showConfirmPassword = false;
   bool isLoading = false;
+  bool isDoctor = false; // Toggle state for patient/doctor registration
 
   @override
   void dispose() {
@@ -113,60 +114,83 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
+  void _toggleRegistrationType() {
+    setState(() {
+      isDoctor = !isDoctor;
+    });
+  }
+
   Widget _buildPatientInfoBox(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: const Color(0xFFF0F5FF),
-        border: Border.all(color: const Color(0xFFCCE0FF)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.group, color: Colors.blue),
-              SizedBox(width: 8),
-              Text(
-                "Patient Registration",
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "Join our homeopathic clinic community as a patient.",
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.black54),
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              const Icon(Icons.info, size: 18, color: Colors.blue),
-              const SizedBox(width: 4),
-              Text(
-                "You will be registered as a patient.",
-                style: GoogleFonts.poppins(fontSize: 13, color: Colors.black87),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text.rich(
-            TextSpan(
-              text: "Are you a doctor? ",
-              style: GoogleFonts.poppins(fontSize: 13),
+    final isDoctorMode = isDoctor;
+    
+    return GestureDetector(
+      onTap: _toggleRegistrationType,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: const Color(0xFFF0F5FF),
+          border: Border.all(color: const Color(0xFFCCE0FF)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                TextSpan(
-                  text: "Register here",
-                  style: GoogleFonts.poppins(
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Icon(
+                  isDoctorMode ? Icons.medical_services : Icons.group,
+                  color: isDoctorMode ? Colors.green : Colors.blue,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  isDoctorMode ? "Doctor Registration" : "Patient Registration",
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Text(
+              isDoctorMode 
+                  ? "Create your doctor account to manage patients and treatments."
+                  : "Join our homeopathic clinic community as a patient.",
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.black54),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Icon(Icons.info, size: 18, color: isDoctorMode ? Colors.green : Colors.blue),
+                const SizedBox(width: 4),
+                Text(
+                  isDoctorMode 
+                      ? "This will register you as a doctor." 
+                      : "You will be registered as a patient.",
+                  style: GoogleFonts.poppins(fontSize: 13, color: Colors.black87),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            GestureDetector(
+              onTap: _toggleRegistrationType,
+              child: Text.rich(
+                TextSpan(
+                  text: isDoctorMode 
+                      ? "Not a Doctor? " 
+                      : "Are you a doctor? ",
+                  style: GoogleFonts.poppins(fontSize: 13),
+                  children: [
+                    TextSpan(
+                      text: isDoctorMode ? "Go there" : "Register here",
+                      style: GoogleFonts.poppins(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -434,5 +458,4 @@ class _SignUpScreenState extends State<SignUpScreen> {
   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
 </svg>
 ''';
-
 }
