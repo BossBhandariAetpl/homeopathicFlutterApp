@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -12,7 +13,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   bool agreeTerms = false;
   bool showPassword = false;
@@ -71,12 +73,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 10,
-            color: Colors.black12,
-          ),
-        ],
+        boxShadow: [BoxShadow(blurRadius: 10, color: Colors.black12)],
       ),
       child: Icon(
         Icons.assignment_ind,
@@ -93,12 +90,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 12,
-          )
-        ],
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 12)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,10 +280,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       children: [
         Expanded(child: Container(height: 1, color: Colors.black12)),
         const SizedBox(width: 10),
-        Text(
-          "Or sign up with",
-          style: GoogleFonts.poppins(fontSize: 13),
-        ),
+        Text("Or sign up with", style: GoogleFonts.poppins(fontSize: 13)),
         const SizedBox(width: 10),
         Expanded(child: Container(height: 1, color: Colors.black12)),
       ],
@@ -302,22 +291,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return SizedBox(
       width: double.infinity,
       height: 50,
-      child: OutlinedButton.icon(
+      child: OutlinedButton(
         onPressed: () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Google signup coming soon!")),
           );
         },
-        icon: Image.asset("assets/google.png", height: 22),
-        label: Text(
-          "Sign up with Google",
-          style: GoogleFonts.poppins(fontSize: 16, color: Colors.black87),
-        ),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Colors.black26),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.string(_googleSvg, height: 20, width: 20),
+            const SizedBox(width: 12),
+            Text(
+              "Sign up with Google",
+              style: GoogleFonts.poppins(fontSize: 16, color: Colors.black87),
+            ),
+          ],
         ),
       ),
     );
@@ -348,7 +343,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _handleSignUp() {
     if (_validateForm()) {
       setState(() => isLoading = true);
-      
+
       // Simulate signup process
       Future.delayed(const Duration(seconds: 2), () {
         setState(() => isLoading = false);
@@ -395,9 +390,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Widget _buildTextField({
@@ -413,10 +408,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       children: [
         Text(
           label,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
+          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 6),
         TextField(
@@ -426,13 +418,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(color: Colors.black45, fontSize: 14),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             suffixIcon: suffix,
           ),
         ),
       ],
     );
   }
+
+  static const String _googleSvg = '''
+<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.66-2.07z"/>
+  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+</svg>
+''';
+
 }
