@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/auth_service.dart';
 import '../widgets/doctor/doctor_navbar.dart';
 
 class PatientManagementScreen extends StatelessWidget {
@@ -163,13 +165,314 @@ class _ActionCard extends StatelessWidget {
   }
 }
 
-class _AddPatientPlaceholder extends StatelessWidget {
+class _AddPatientPlaceholder extends StatefulWidget {
   const _AddPatientPlaceholder();
+
+  @override
+  _AddPatientPlaceholderState createState() => _AddPatientPlaceholderState();
+}
+
+class _AddPatientPlaceholderState extends State<_AddPatientPlaceholder> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _medicalHistoryController = TextEditingController();
+  final TextEditingController _doctorNameController = TextEditingController();
+  
+  String? _selectedGender;
+  final List<String> _genders = ['Male', 'Female', 'Other'];
+  final _authService = AuthService();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDoctorName();
+  }
+
+  Future<void> _fetchDoctorName() async {
+    try {
+      final user = _authService.currentUser;
+      if (user != null) {
+        final profile = await _authService.getUserProfile(user.uid);
+        final name = profile?['name'] ?? user.displayName ?? 'Doctor';
+        setState(() {
+          _doctorNameController.text = '$name (Self)';
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _doctorNameController.text = 'Doctor (Self)';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _doctorNameController.text = 'Doctor (Self)';
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _ageController.dispose();
+    _addressController.dispose();
+    _medicalHistoryController.dispose();
+    _doctorNameController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add New Patient')),
-      body: const Center(child: Text('Add Patient screen - TODO')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('Add New Patient'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Personal Information',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                label: 'Full Name',
+                hint: 'Enter patient name',
+                controller: _nameController,
+                isRequired: true,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      label: 'Contact Number',
+                      hint: '10-digit number',
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      isRequired: true,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField(
+                      label: 'Email',
+                      hint: 'email@example.com',
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      label: 'Age',
+                      hint: 'Age in years',
+                      controller: _ageController,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Gender',
+                          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                        ),
+                        const SizedBox(height: 4),
+                        DropdownButtonFormField<String>(
+                          value: _selectedGender,
+                          decoration: InputDecoration(
+                            hintText: 'Select gender',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
+                          items: _genders.map((gender) {
+                            return DropdownMenuItem(
+                              value: gender,
+                              child: Text(gender),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedGender = value;
+                            });
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please select gender';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _isLoading 
+                ? const CircularProgressIndicator()
+                : _buildTextField(
+                    label: 'Assigned Doctor',
+                    hint: 'Loading...',
+                    enabled: false,
+                    controller: _doctorNameController,
+                  ),
+              const SizedBox(height: 16),
+              const Text(
+                'Address',
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+              ),
+              const SizedBox(height: 4),
+              TextFormField(
+                controller: _addressController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Enter address',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Medical History',
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+              ),
+              const SizedBox(height: 4),
+              TextFormField(
+                controller: _medicalHistoryController,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText: 'Enter medical history, allergies, previous conditions, etc.',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: const BorderSide(color: Colors.grey),
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          // TODO: Handle form submission
+                          print('Form submitted');
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0E9B95),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('Add Patient'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+    bool isRequired = false,
+    TextInputType? keyboardType,
+    bool enabled = true,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            text: label,
+            style: const TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
+            children: [
+              if (isRequired)
+                const TextSpan(
+                  text: ' *',
+                  style: TextStyle(color: Colors.red),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        TextFormField(
+          controller: controller,
+          enabled: enabled,
+          keyboardType: keyboardType,
+          decoration: InputDecoration(
+            hintText: hint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          ),
+          validator: isRequired
+              ? (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'This field is required';
+                  }
+                  if (keyboardType == TextInputType.phone && value.length != 10) {
+                    return 'Please enter a valid 10-digit number';
+                  }
+                  if (keyboardType == TextInputType.emailAddress &&
+                      !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                    return 'Please enter a valid email';
+                  }
+                  return null;
+                }
+              : null,
+        ),
+      ],
     );
   }
 }
