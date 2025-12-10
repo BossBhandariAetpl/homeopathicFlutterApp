@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../common/widgets/app_title_logo.dart';
 
 class PatientNavbar extends StatelessWidget implements PreferredSizeWidget {
   const PatientNavbar({super.key});
 
-  Future<void> _signOut(BuildContext context) async {
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  Future<void> _handleSignOut(BuildContext context) async {
     try {
       await FirebaseAuth.instance.signOut();
-      // Navigate to login screen and remove all previous routes
       if (context.mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/login',
-          (route) => false,
-        );
+        context.go('/login');
       }
     } catch (e) {
       if (context.mounted) {
@@ -26,25 +27,25 @@ class PatientNavbar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: const Text('Patient Home'),
-      centerTitle: true,
+      backgroundColor: Colors.white,
+      elevation: 1,
+      automaticallyImplyLeading: false,
+      title: const AppTitleLogo(), // Using the common AppTitleLogo
       actions: [
         IconButton(
-          icon: const Icon(Icons.person_outline),
+          icon: const Icon(Icons.person_outline, color: Colors.black87),
           tooltip: 'Profile',
           onPressed: () {
             // Navigate to patient profile
           },
         ),
         IconButton(
-          icon: const Icon(Icons.logout),
+          icon: const Icon(Icons.logout, color: Colors.red),
           tooltip: 'Logout',
-          onPressed: () => _signOut(context),
+          onPressed: () => _handleSignOut(context),
         ),
+        const SizedBox(width: 8),
       ],
     );
   }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
