@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'features/auth/screens/home_screen.dart';
 import 'features/auth/screens/login_screen.dart' as auth_screens;
 import 'features/doctor/screens/doctor_home_screen.dart';
+import 'features/patient/screens/patient_home_screen.dart';
+import 'features/receptionist/screens/receptionist_home_screen.dart';
 import 'core/services/auth_service.dart';
 
 void main() async {
@@ -25,23 +27,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.teal,
         useMaterial3: true,
       ),
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
-          if (snapshot.hasData) {
-            // TODO: Implement role-based routing
-            return const DoctorHomeScreen();
-          }
-          return const auth_screens.LoginScreen();
-        },
-      ),
+      home: const StartupWrapper(),
     );
   }
 }
@@ -63,8 +49,8 @@ class StartupWrapper extends StatelessWidget {
         final user = snapshot.data;
 
         if (user == null) {
-          // 🔥 Not logged in → still show HomeScreen (NOT LoginScreen)
-          return const HomeScreen();
+          // Show login screen when not authenticated
+          return const auth_screens.LoginScreen();
         }
 
         // 🔥 Logged in → load correct role screen
@@ -77,12 +63,18 @@ class StartupWrapper extends StatelessWidget {
               );
             }
 
-            final role = roleSnapshot.data;
+            final role = roleSnapshot.data?.toLowerCase();
 
-            if (role == "doctor") {
-              return const DoctorHomeScreen();
-            } else {
-              return const HomeScreen();
+            switch (role) {
+              case 'doctor':
+                return const DoctorHomeScreen();
+              case 'patient':
+                return const PatientHomeScreen();
+              case 'receptionist':
+                return const ReceptionistHomeScreen();
+              default:
+                // Fallback to generic home screen if role is not recognized
+                return const HomeScreen();
             }
           },
         );
