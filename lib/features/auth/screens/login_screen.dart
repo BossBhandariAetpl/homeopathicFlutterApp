@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_homeopathy_app/screens/doctor/doctor_home_screen.dart';
-import 'package:flutter_homeopathy_app/screens/patient/patient_home_screen.dart';
-import '../../services/auth_service.dart';
+import 'package:flutter_homeopathy_app/features/doctor/screens/doctor_home_screen.dart';
+import 'package:flutter_homeopathy_app/features/patient/screens/patient_home_screen.dart';
+import '../../../core/services/auth_service.dart';
 
 // Shared imports
-import '../../constants/text_styles.dart';
-import '../../widgets/common/custom_text_field.dart';
+import '../../../constants/text_styles.dart';
+import '../../../common/widgets/common/custom_text_field.dart';
 
 // Fallback home screen
 class HomeScreen extends StatelessWidget {

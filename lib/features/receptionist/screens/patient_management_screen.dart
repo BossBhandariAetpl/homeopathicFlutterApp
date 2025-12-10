@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../services/auth_service.dart';
-import '../widgets/doctor/doctor_navbar.dart';
+import '../../../core/services/auth_service.dart';
+import '../../doctor/widgets/doctor/doctor_navbar.dart';
 
 class PatientManagementScreen extends StatelessWidget {
   const PatientManagementScreen({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_homeopathy_app/services/auth_service.dart';
+import '../../../../core/services/auth_service.dart';
 
 class DoctorProfileScreen extends StatelessWidget {
   const DoctorProfileScreen({super.key});

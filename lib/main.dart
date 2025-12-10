@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'screens/home_screen.dart';
-import 'screens/doctor/doctor_home_screen.dart';
-import 'services/auth_service.dart';
+import 'features/auth/screens/home_screen.dart';
+import 'features/auth/screens/login_screen.dart' as auth_screens;
+import 'features/doctor/screens/doctor_home_screen.dart';
+import 'core/services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,7 +20,28 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const StartupWrapper(),
+      title: 'Homeopathy App',
+      theme: ThemeData(
+        primarySwatch: Colors.teal,
+        useMaterial3: true,
+      ),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          if (snapshot.hasData) {
+            // TODO: Implement role-based routing
+            return const DoctorHomeScreen();
+          }
+          return const auth_screens.LoginScreen();
+        },
+      ),
     );
   }
 }

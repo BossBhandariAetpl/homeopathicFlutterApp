@@ -1,4 +1,4 @@
-import '../models/medicine.dart';
+import '../../features/doctor/models/medicine.dart';
 import 'api_service.dart';
 
 class MedicineService {

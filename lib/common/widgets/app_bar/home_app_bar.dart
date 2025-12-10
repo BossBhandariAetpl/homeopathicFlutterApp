@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../screens/auth/login_screen.dart';
-import '../../screens/auth/signup_screen.dart';
+import '../../../features/auth/screens/login_screen.dart';
+import '../../../features/auth/screens/signup_screen.dart';
 
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
