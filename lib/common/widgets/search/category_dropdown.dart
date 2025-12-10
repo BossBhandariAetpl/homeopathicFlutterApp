@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../constants/text_styles.dart';
+// import '../../constants/text_styles.dart';
 
 class CategoryDropdown extends StatelessWidget {
   final List<String> categories;
@@ -23,7 +23,7 @@ class CategoryDropdown extends StatelessWidget {
       onChanged: onChanged,
       decoration: InputDecoration(
         labelText: "Category",
-        labelStyle: AppTextStyles.label,
+        labelStyle: TextStyle(),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );

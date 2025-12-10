@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../constants/text_styles.dart';
+import '../../../constants/text_styles.dart';
 
 class MedicinesHeader extends StatelessWidget {
   final String title;

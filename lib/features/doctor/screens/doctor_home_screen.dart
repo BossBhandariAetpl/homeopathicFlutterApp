@@ -2,30 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../models/medicine.dart';
-import '../services/medicine_service.dart';
+import '../../../core/services/medicine_service.dart';
 
 // Widgets
-import '../widgets/app_bar/home_app_bar.dart';
-import '../widgets/cards/medicine_card.dart';
-import '../widgets/headers/medicines_header.dart';
-import '../widgets/search/category_dropdown.dart';
-import '../widgets/search/search_by_name.dart';
+import '../../../common/widgets/cards/medicine_card.dart';
+import '../../../common/widgets/headers/medicines_header.dart';
+import '../../../common/widgets/search/category_dropdown.dart';
+import '../../../common/widgets/search/search_by_name.dart';
+import '../widgets/doctor/doctor_navbar.dart';
 
 // Constants
-import '../constants/app_strings.dart';
+import '../../../constants/app_strings.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class DoctorHomeScreen extends StatefulWidget {
+  const DoctorHomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<DoctorHomeScreen> createState() => _DoctorHomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
   bool _loading = true;
 
   int _currentPage = 1;
   int _itemsPerPage = 12;
+
   String _searchTerm = "";
   String _selectedCategory = "all";
 
@@ -34,32 +35,48 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static const List<String> _categories = AppStrings.categories;
 
+  // ----------------------------
+  // Pagination Logic
+  // ----------------------------
+  List<Medicine> get _paginatedMedicines {
+    final start = (_currentPage - 1) * _itemsPerPage;
+    if (start >= _filteredMedicines.length) return [];
+
+    final end = (_currentPage * _itemsPerPage).clamp(
+      0,
+      _filteredMedicines.length,
+    );
+
+    return _filteredMedicines.sublist(start, end);
+  }
+
+  // ----------------------------
+  // Lifecycle
+  // ----------------------------
   @override
   void initState() {
     super.initState();
     _loadMedicines();
   }
 
-  // ------------------------------------------------------
-  // Data Loading
-  // ------------------------------------------------------
   Future<void> _loadMedicines() async {
     try {
       final fetched = await MedicineService().fetchMedicines();
+
       setState(() {
         _medicines.addAll(fetched);
         _filteredMedicines.addAll(fetched);
         _loading = false;
       });
     } catch (e) {
-      debugPrint("❌ Failed to load medicines: $e");
+      debugPrint("❌ Error loading medicines: $e");
       setState(() => _loading = false);
     }
   }
 
-  // ------------------------------------------------------
+  // ----------------------------
   // Filtering Logic
-  // ------------------------------------------------------
+  // ----------------------------
   void _applyFilters() {
     final term = _searchTerm.toLowerCase().trim();
 
@@ -83,34 +100,18 @@ class _HomeScreenState extends State<HomeScreen> {
           }),
         );
 
-      // Reset page after filtering
       _currentPage = 1;
     });
   }
 
-  // ------------------------------------------------------
-  // Pagination Getter
-  // ------------------------------------------------------
-  List<Medicine> get _paginatedMedicines {
-    final start = (_currentPage - 1) * _itemsPerPage;
-    if (start >= _filteredMedicines.length) return [];
-
-    final end = (_currentPage * _itemsPerPage).clamp(
-      0,
-      _filteredMedicines.length,
-    );
-
-    return _filteredMedicines.sublist(start, end);
-  }
-
-  // ------------------------------------------------------
+  // ----------------------------
   // UI
-  // ------------------------------------------------------
+  // ----------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const HomeAppBar(),
+      appBar: DoctorNavbar(),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _buildBody(),
@@ -121,19 +122,16 @@ class _HomeScreenState extends State<HomeScreen> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const SizedBox(height: 16),
-
-        // Search Input
+        // Search
         SearchByName(
-          onChanged: (value) {
-            _searchTerm = value;
+          onChanged: (v) {
+            _searchTerm = v;
             _applyFilters();
           },
         ),
-
         const SizedBox(height: 16),
 
-        // Category Dropdown
+        // Category Filter
         CategoryDropdown(
           categories: _categories,
           selectedCategory: _selectedCategory,
@@ -142,19 +140,17 @@ class _HomeScreenState extends State<HomeScreen> {
             _applyFilters();
           },
         ),
-
         const SizedBox(height: 16),
 
-        // Header
+        // Section Header
         const MedicinesHeader(
           title: 'All Medicines',
           description:
-              'Explore our comprehensive collection of homeopathic remedies. Find detailed information about symptoms, usage, and more.',
+              'Explore our comprehensive collection of homeopathic remedies.',
         ),
-
         const SizedBox(height: 12),
 
-        // Count Summary
+        // Count Display
         Text(
           "Showing ${_paginatedMedicines.length} of ${_filteredMedicines.length} medicines",
           style: GoogleFonts.poppins(
@@ -162,10 +158,9 @@ class _HomeScreenState extends State<HomeScreen> {
             fontWeight: FontWeight.w500,
           ),
         ),
-
         const SizedBox(height: 12),
 
-        // Medicine Cards List
+        // Medicine List
         ..._paginatedMedicines.map(
           (med) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
@@ -184,15 +179,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ------------------------------------------------------
-  // Pagination Section
-  // ------------------------------------------------------
+  // ----------------------------
+  // Pagination Bar
+  // ----------------------------
   Widget _buildPaginationBar() {
     if (_filteredMedicines.isEmpty) return const SizedBox();
 
     final totalPages = ((_filteredMedicines.length - 1) / _itemsPerPage).ceil();
-
     final showingFrom = ((_currentPage - 1) * _itemsPerPage) + 1;
+
     final showingTo = (_currentPage * _itemsPerPage).clamp(
       showingFrom,
       _filteredMedicines.length,
@@ -207,18 +202,14 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Showing $showingFrom-$showingTo of ${_filteredMedicines.length}",
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          ),
+          Text("Showing $showingFrom-$showingTo of ${_filteredMedicines.length}"),
           const SizedBox(height: 12),
 
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            runSpacing: 10,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildItemsPerPageDropdown(),
-              _buildPageNavigation(totalPages),
+              _buildPageButtons(totalPages),
             ],
           ),
         ],
@@ -231,79 +222,54 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         const Text("Per page: "),
         const SizedBox(width: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.green),
-            borderRadius: BorderRadius.circular(6),
-            color: Colors.white,
-          ),
-          child: DropdownButton<int>(
-            value: _itemsPerPage,
-            underline: const SizedBox(),
-            items: const [12, 24, 48, 96]
-                .map((e) => DropdownMenuItem(value: e, child: Text("$e")))
-                .toList(),
-            onChanged: (value) {
-              if (value != null) {
-                setState(() {
-                  _itemsPerPage = value;
-                  _currentPage = 1;
-                });
-              }
-            },
-          ),
+        DropdownButton<int>(
+          value: _itemsPerPage,
+          items: const [12, 24, 48]
+              .map((e) => DropdownMenuItem(value: e, child: Text("$e")))
+              .toList(),
+          onChanged: (value) {
+            if (value != null) {
+              setState(() {
+                _itemsPerPage = value;
+                _currentPage = 1;
+              });
+            }
+          },
         ),
       ],
     );
   }
 
-  Widget _buildPageNavigation(int totalPages) {
+  Widget _buildPageButtons(int totalPages) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
       children: [
-        _pageButton(
-          icon: Icons.first_page,
-          enabled: _currentPage > 1,
-          action: () => _setPage(1),
+        IconButton(
+          icon: const Icon(Icons.first_page),
+          onPressed:
+              _currentPage > 1 ? () => setState(() => _currentPage = 1) : null,
         ),
-        _pageButton(
-          icon: Icons.chevron_left,
-          enabled: _currentPage > 1,
-          action: () => _setPage(_currentPage - 1),
+        IconButton(
+          icon: const Icon(Icons.chevron_left),
+          onPressed: _currentPage > 1
+              ? () => setState(() => _currentPage--)
+              : null,
         ),
 
         Text("Page $_currentPage of $totalPages"),
 
-        _pageButton(
-          icon: Icons.chevron_right,
-          enabled: _currentPage < totalPages,
-          action: () => _setPage(_currentPage + 1),
+        IconButton(
+          icon: const Icon(Icons.chevron_right),
+          onPressed: _currentPage < totalPages
+              ? () => setState(() => _currentPage++)
+              : null,
         ),
-        _pageButton(
-          icon: Icons.last_page,
-          enabled: _currentPage < totalPages,
-          action: () => _setPage(totalPages),
+        IconButton(
+          icon: const Icon(Icons.last_page),
+          onPressed: _currentPage < totalPages
+              ? () => setState(() => _currentPage = totalPages)
+              : null,
         ),
       ],
-    );
-  }
-
-  // ------------------------------------------------------
-  // Helpers
-  // ------------------------------------------------------
-  void _setPage(int page) {
-    setState(() => _currentPage = page);
-  }
-
-  Widget _pageButton({
-    required IconData icon,
-    required bool enabled,
-    required VoidCallback action,
-  }) {
-    return IconButton(
-      icon: Icon(icon),
-      onPressed: enabled ? action : null,
     );
   }
 }
