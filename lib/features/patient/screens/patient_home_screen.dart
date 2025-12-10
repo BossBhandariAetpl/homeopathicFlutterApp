@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
 
-class PatientHomeScreen extends StatelessWidget {
+import '../../auth/screens/home_screen.dart';
+import '../widgets/patient/patient_navbar.dart';
+
+class PatientHomeScreen extends BaseHomeScreen<PatientHomeScreen> {
   const PatientHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Patient Home'),
-        centerTitle: true,
-      ),
-      body: const Center(
-        child: Text(
-          'Welcome to Patient Dashboard',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
+  BaseHomeScreenState<BaseHomeScreen<PatientHomeScreen>, PatientHomeScreen> createState() => _PatientHomeScreenState();
+}
+
+class _PatientHomeScreenState extends BaseHomeScreenState<BaseHomeScreen<PatientHomeScreen>, PatientHomeScreen> {
+  @override
+  PreferredSizeWidget buildAppBar() {
+    return const PatientNavbar();
+  }
+
+  @override
+  Widget buildContent() {
+    return const Center(
+      child: Text(
+        'Welcome to Patient Dashboard',
+        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
     );
   }

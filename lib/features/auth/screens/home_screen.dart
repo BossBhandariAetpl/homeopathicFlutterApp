@@ -1,3 +1,4 @@
+// home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -14,25 +15,26 @@ import '../../../common/widgets/search/search_by_name.dart';
 // Constants
 import '../../../constants/app_strings.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+// Base class with common functionality
+abstract class BaseHomeScreen<T extends StatefulWidget> extends StatefulWidget {
+  const BaseHomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  BaseHomeScreenState<BaseHomeScreen<T>, T> createState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+abstract class BaseHomeScreenState<T extends BaseHomeScreen<W>, W extends StatefulWidget> extends State<W> {
   bool _loading = true;
-
   int _currentPage = 1;
   int _itemsPerPage = 12;
   String _searchTerm = "";
   String _selectedCategory = "all";
-
   final List<Medicine> _medicines = [];
   final List<Medicine> _filteredMedicines = [];
-
   static const List<String> _categories = AppStrings.categories;
+
+  // Abstract method to be implemented by subclasses
+  PreferredSizeWidget buildAppBar();
 
   @override
   void initState() {
@@ -40,26 +42,26 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadMedicines();
   }
 
-  // ------------------------------------------------------
   // Data Loading
-  // ------------------------------------------------------
   Future<void> _loadMedicines() async {
     try {
       final fetched = await MedicineService().fetchMedicines();
-      setState(() {
-        _medicines.addAll(fetched);
-        _filteredMedicines.addAll(fetched);
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _medicines.addAll(fetched);
+          _filteredMedicines.addAll(fetched);
+          _loading = false;
+        });
+      }
     } catch (e) {
       debugPrint("❌ Failed to load medicines: $e");
-      setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
-  // ------------------------------------------------------
   // Filtering Logic
-  // ------------------------------------------------------
   void _applyFilters() {
     final term = _searchTerm.toLowerCase().trim();
 
@@ -83,14 +85,11 @@ class _HomeScreenState extends State<HomeScreen> {
           }),
         );
 
-      // Reset page after filtering
       _currentPage = 1;
     });
   }
 
-  // ------------------------------------------------------
   // Pagination Getter
-  // ------------------------------------------------------
   List<Medicine> get _paginatedMedicines {
     final start = (_currentPage - 1) * _itemsPerPage;
     if (start >= _filteredMedicines.length) return [];
@@ -103,21 +102,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return _filteredMedicines.sublist(start, end);
   }
 
-  // ------------------------------------------------------
-  // UI
-  // ------------------------------------------------------
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: const HomeAppBar(),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _buildBody(),
-    );
-  }
-
-  Widget _buildBody() {
+  // Build the main content (can be overridden by subclasses)
+  Widget buildContent() {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -184,9 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ------------------------------------------------------
-  // Pagination Section
-  // ------------------------------------------------------
+  // Pagination Bar
   Widget _buildPaginationBar() {
     if (_filteredMedicines.isEmpty) return const SizedBox();
 
@@ -289,9 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ------------------------------------------------------
   // Helpers
-  // ------------------------------------------------------
   void _setPage(int page) {
     setState(() => _currentPage = page);
   }
@@ -304,6 +286,33 @@ class _HomeScreenState extends State<HomeScreen> {
     return IconButton(
       icon: Icon(icon),
       onPressed: enabled ? action : null,
+      color: enabled ? Colors.blue : Colors.grey,
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: buildAppBar(),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : buildContent(),
+    );
+  }
+}
+
+// Regular HomeScreen implementation
+class HomeScreen extends BaseHomeScreen<HomeScreen> {
+  const HomeScreen({super.key});
+
+  @override
+  BaseHomeScreenState<BaseHomeScreen<HomeScreen>, HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends BaseHomeScreenState<BaseHomeScreen<HomeScreen>, HomeScreen> {
+  @override
+  PreferredSizeWidget buildAppBar() {
+    return const HomeAppBar();
   }
 }
