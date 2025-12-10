@@ -18,11 +18,6 @@ class _PatientHomeScreenState extends BaseHomeScreenState<BaseHomeScreen<Patient
 
   @override
   Widget buildContent() {
-    return const Center(
-      child: Text(
-        'Welcome to Patient Dashboard',
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-    );
+    return const SizedBox.shrink(); // Content is handled by the navbar
   }
 }
