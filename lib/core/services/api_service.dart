@@ -2,9 +2,9 @@ import 'package:dio/dio.dart';
 
 class ApiService {
   final dio = Dio(BaseOptions(
-    baseUrl: 'http://10.0.2.2:5001/homeo-backend/us-central1/api',
-    connectTimeout: Duration(seconds: 10),
-    receiveTimeout: Duration(seconds: 10),
+    baseUrl: 'https://api-f7x6ruhiiq-uc.a.run.app',
+    connectTimeout: Duration(seconds: 60),
+    receiveTimeout: Duration(seconds: 60),
   ));
 
   Future<List<dynamic>> getMedicines() async {

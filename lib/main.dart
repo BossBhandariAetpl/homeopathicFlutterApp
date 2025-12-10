@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'screens/home_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import 'features/auth/screens/home_screen.dart';
+import 'features/auth/screens/login_screen.dart' as auth_screens;
+import 'features/doctor/screens/doctor_home_screen.dart';
+import 'core/services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    runApp(const MyApp());
-  } catch (e) {
-    runApp(ErrorApp(error: e.toString()));
-  }
+  await Firebase.initializeApp();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -23,29 +20,73 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Homeopathic Clinic',
+      title: 'Homeopathy App',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        primarySwatch: Colors.teal,
+        useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          if (snapshot.hasData) {
+            // TODO: Implement role-based routing
+            return const DoctorHomeScreen();
+          }
+          return const auth_screens.LoginScreen();
+        },
+      ),
     );
   }
 }
 
-class ErrorApp extends StatelessWidget {
-  final String error;
-  const ErrorApp({super.key, required this.error});
+class StartupWrapper extends StatelessWidget {
+  const StartupWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Error')),
-        body: Center(
-          child: Text('Error: $error'),
-        ),
-      ),
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final user = snapshot.data;
+
+        if (user == null) {
+          // 🔥 Not logged in → still show HomeScreen (NOT LoginScreen)
+          return const HomeScreen();
+        }
+
+        // 🔥 Logged in → load correct role screen
+        return FutureBuilder<String?>(
+          future: AuthService().getUserRole(user.uid),
+          builder: (context, roleSnapshot) {
+            if (!roleSnapshot.hasData) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            final role = roleSnapshot.data;
+
+            if (role == "doctor") {
+              return const DoctorHomeScreen();
+            } else {
+              return const HomeScreen();
+            }
+          },
+        );
+      },
     );
   }
 }
