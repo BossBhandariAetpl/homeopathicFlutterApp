@@ -18,6 +18,6 @@ class _PatientHomeScreenState extends BaseHomeScreenState<BaseHomeScreen<Patient
 
   @override
   Widget buildContent() {
-    return const SizedBox.shrink(); // Content is handled by the navbar
+    return super.buildContent(); // Use the medicine list from BaseHomeScreen
   }
 }
