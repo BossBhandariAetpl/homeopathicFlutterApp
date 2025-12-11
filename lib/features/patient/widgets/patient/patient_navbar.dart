@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../common/widgets/app_title_logo.dart';
 import '../../screens/patient_home_screen.dart';
 import '../../screens/dashboard_screen.dart';
+import '../../screens/patient_profile_screen.dart';
 
 class PatientNavbar extends StatelessWidget implements PreferredSizeWidget {
   PatientNavbar({super.key});
@@ -136,7 +137,11 @@ class PatientNavbar extends StatelessWidget implements PreferredSizeWidget {
                       title: const Text("My Profile"),
                       onTap: () {
                         Navigator.pop(context); // close popup menu
-                        // Add profile navigation later
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const PatientProfileScreen(),
+                          ),
+                        );
                       },
                     ),
                     ListTile(
