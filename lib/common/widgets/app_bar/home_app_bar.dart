@@ -63,6 +63,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.white,
       elevation: 0,
       automaticallyImplyLeading: false,
+      titleSpacing: 0,
       title: const AppTitleLogo(), // Use the new component
       actions: [_buildProfileButton(context)],
     );
