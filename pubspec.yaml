@@ -44,6 +44,8 @@ dependencies:
   google_fonts: ^6.1.0
   http: ^1.2.0
   go_router: ^13.2.0
+  font_awesome_flutter: ^10.5.0  # or the latest version
+
 
 dev_dependencies:
   flutter_test:

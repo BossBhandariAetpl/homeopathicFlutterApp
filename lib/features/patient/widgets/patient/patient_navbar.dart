@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../common/widgets/app_title_logo.dart';
 import '../../screens/patient_home_screen.dart';
+import '../../screens/dashboard_screen.dart';
 
 class PatientNavbar extends StatelessWidget implements PreferredSizeWidget {
   PatientNavbar({super.key});
@@ -28,7 +29,7 @@ class PatientNavbar extends StatelessWidget implements PreferredSizeWidget {
           onSelected: (value) async {
             switch (value) {
               // Navigation items
-              case 1: // Dashboard
+              case 1: // Medicines
                 if (context.mounted) {
                   Navigator.pushReplacement(
                     context,
@@ -36,10 +37,18 @@ class PatientNavbar extends StatelessWidget implements PreferredSizeWidget {
                   );
                 }
                 break;
-              case 2: // Medicines
+              case 2: // Dashboard
+                if (context.mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => DashboardScreen()),
+                  );
+                }
+                break;
+              case 3: // Medicines
                 // Add navigation to medicines screen later
                 break;
-              case 3: // Appointments
+              case 4: // Appointments
                 // Add navigation to appointments screen later
                 break;
               
