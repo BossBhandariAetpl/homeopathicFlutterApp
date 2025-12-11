@@ -16,7 +16,7 @@ class _ReceptionistHomeScreenState
   
   @override
   PreferredSizeWidget buildAppBar() {
-    return const ReceptionistNavbar();
+    return ReceptionistNavbar();
   }
 
   @override
