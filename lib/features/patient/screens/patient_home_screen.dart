@@ -13,7 +13,7 @@ class PatientHomeScreen extends BaseHomeScreen<PatientHomeScreen> {
 class _PatientHomeScreenState extends BaseHomeScreenState<BaseHomeScreen<PatientHomeScreen>, PatientHomeScreen> {
   @override
   PreferredSizeWidget buildAppBar() {
-    return const PatientNavbar();
+    return PatientNavbar();
   }
 
   @override

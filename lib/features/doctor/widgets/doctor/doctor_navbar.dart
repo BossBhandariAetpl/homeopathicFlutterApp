@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../../common/widgets/app_title_logo.dart';
 import '../../screens/doctor_home_screen.dart';
 import '../../screens/doctor_profile_screen.dart';
 import '../../../receptionist/screens/patient_management_screen.dart';
@@ -19,45 +20,10 @@ class DoctorNavbar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.white,
       elevation: 1,
       automaticallyImplyLeading: false,
-      titleSpacing: 0,
-
       // -----------------------------
       //   LEFT SIDE: LOGO + TITLE 
       // -----------------------------
-      title: Row(
-        children: [
-          const SizedBox(width: 12),
-
-          // App Logo
-          Image.asset("assets/icons/logo/Logo.png", height: 45),
-
-          const SizedBox(width: 10),
-
-          // Title text column
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
-                "Homeopathic Clinic",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.teal,
-                ),
-              ),
-              Text(
-                "MANAGEMENT SYSTEM",
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+      title: const AppTitleLogo(),
 
       // -----------------------------
       //   RIGHT SIDE: 3-LINE MENU

@@ -2,27 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../common/widgets/app_title_logo.dart';
+import '../../screens/patient_home_screen.dart';
 
 class PatientNavbar extends StatelessWidget implements PreferredSizeWidget {
-  const PatientNavbar({super.key});
+  PatientNavbar({super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
-  Future<void> _handleSignOut(BuildContext context) async {
-    try {
-      await FirebaseAuth.instance.signOut();
-      if (context.mounted) {
-        context.go('/login');
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error signing out')),
-        );
-      }
-    }
-  }
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -30,21 +18,137 @@ class PatientNavbar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.white,
       elevation: 1,
       automaticallyImplyLeading: false,
-      title: const AppTitleLogo(), // Using the common AppTitleLogo
+      title: const AppTitleLogo(),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.person_outline, color: Colors.black87),
-          tooltip: 'Profile',
-          onPressed: () {
-            // Navigate to patient profile
+        PopupMenuButton<int>(
+          icon: const Icon(Icons.menu, color: Colors.black87, size: 30),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          onSelected: (value) async {
+            switch (value) {
+              // Navigation items
+              case 1: // Dashboard
+                if (context.mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PatientHomeScreen()),
+                  );
+                }
+                break;
+              case 2: // Medicines
+                // Add navigation to medicines screen later
+                break;
+              case 3: // Appointments
+                // Add navigation to appointments screen later
+                break;
+              
+              // User menu
+              case 10: // Profile
+                // Open profile later
+                break;
+
+              case 11: // Logout
+                await _auth.signOut();
+                if (context.mounted) {
+                  context.go('/login');
+                }
+                break;
+            }
           },
+          itemBuilder: (context) => [
+            // Navigation Group
+            const PopupMenuItem(
+              value: 999,
+              enabled: false,
+              child: Text(
+                "Navigation",
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ),
+
+            const PopupMenuItem(
+              value: 1,
+              child: ListTile(
+                leading: Icon(Icons.dashboard, color: Colors.blue),
+                title: Text("Medicines"),
+                horizontalTitleGap: 0,
+              ),
+            ),
+
+            const PopupMenuItem(
+              value: 2,
+              child: ListTile(
+                leading: Icon(Icons.medication, color: Colors.teal),
+                title: Text("Dashboard"),
+                horizontalTitleGap: 0,
+              ),
+            ),
+
+            const PopupMenuItem(
+              value: 3,
+              child: ListTile(
+                leading: Icon(Icons.calendar_month, color: Colors.purple),
+                title: Text("Appointments"),
+                horizontalTitleGap: 0,
+              ),
+            ),
+
+            const PopupMenuDivider(),
+
+            // User Profile Group
+            PopupMenuItem(
+              enabled: false,
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  dividerColor: Colors.transparent,
+                  splashColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                ),
+                child: ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  childrenPadding: EdgeInsets.zero,
+                  title: const Text(
+                    "Patient",
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  trailing: const Icon(Icons.keyboard_arrow_down, size: 20, color: Colors.grey),
+                  children: [
+                    const ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(radius: 14, child: Text("👤")),
+                      title: Text("Signed in as: Patient"),
+                      horizontalTitleGap: 0,
+                      enabled: false,
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.person, color: Colors.black87),
+                      title: const Text("My Profile"),
+                      onTap: () {
+                        Navigator.pop(context); // close popup menu
+                        // Add profile navigation later
+                      },
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(Icons.logout, color: Colors.red.shade700),
+                      title: const Text("Sign Out"),
+                      onTap: () async {
+                        Navigator.pop(context); // close popup menu
+                        await _auth.signOut();
+                        if (context.mounted) {
+                          context.go('/login');
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-        IconButton(
-          icon: const Icon(Icons.logout, color: Colors.red),
-          tooltip: 'Logout',
-          onPressed: () => _handleSignOut(context),
-        ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 6),
       ],
     );
   }
