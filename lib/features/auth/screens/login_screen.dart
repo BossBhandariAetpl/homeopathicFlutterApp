@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_homeopathy_app/features/doctor/screens/doctor_home_screen.dart';
 import 'package:flutter_homeopathy_app/features/patient/screens/patient_home_screen.dart';
+import 'package:flutter_homeopathy_app/features/receptionist/screens/receptionist_home_screen.dart';
 import '../../../core/services/auth_service.dart';
 
 // Shared imports
@@ -90,6 +91,11 @@ class _LoginScreenState extends State<LoginScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const PatientHomeScreen()),
+            );
+          } else if (roles.contains('receptionist')) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const ReceptionistHomeScreen()),
             );
           } else {
             // Default fallback for other roles
