@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_homeopathy_app/features/auth/screens/login_screen.dart';
 import '../../../../common/widgets/app_title_logo.dart';
 import '../../screens/doctor_home_screen.dart';
 import '../../screens/doctor_profile_screen.dart';
@@ -21,7 +22,7 @@ class DoctorNavbar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 1,
       automaticallyImplyLeading: false,
       // -----------------------------
-      //   LEFT SIDE: LOGO + TITLE 
+      //   LEFT SIDE: LOGO + TITLE
       // -----------------------------
       title: const AppTitleLogo(),
 
@@ -36,7 +37,6 @@ class DoctorNavbar extends StatelessWidget implements PreferredSizeWidget {
           ),
           onSelected: (value) async {
             switch (value) {
-
               // -----------------
               // Navigation items
               // -----------------
@@ -50,7 +50,9 @@ class DoctorNavbar extends StatelessWidget implements PreferredSizeWidget {
               case 2: // Patients
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (_) => const PatientManagementScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const PatientManagementScreen(),
+                  ),
                 );
                 break;
 
@@ -75,7 +77,6 @@ class DoctorNavbar extends StatelessWidget implements PreferredSizeWidget {
           },
 
           itemBuilder: (context) => [
-
             // --------------------------
             //  NAVIGATION GROUP
             // --------------------------
@@ -135,7 +136,11 @@ class DoctorNavbar extends StatelessWidget implements PreferredSizeWidget {
                     "Doctor",
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
-                  trailing: const Icon(Icons.keyboard_arrow_down, size: 20, color: Colors.grey),
+                  trailing: const Icon(
+                    Icons.keyboard_arrow_down,
+                    size: 20,
+                    color: Colors.grey,
+                  ),
                   children: [
                     const ListTile(
                       contentPadding: EdgeInsets.zero,
@@ -152,7 +157,9 @@ class DoctorNavbar extends StatelessWidget implements PreferredSizeWidget {
                         Navigator.pop(context); // close popup menu
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const DoctorProfileScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const DoctorProfileScreen(),
+                          ),
                         );
                       },
                     ),
@@ -162,7 +169,28 @@ class DoctorNavbar extends StatelessWidget implements PreferredSizeWidget {
                       title: const Text("Sign Out"),
                       onTap: () async {
                         Navigator.pop(context); // close popup menu
-                        await _auth.signOut();
+                        try {
+                          await _auth.signOut();
+                          if (context.mounted) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                              (route) => false,
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Error signing out: ${e.toString()}',
+                                ),
+                                duration: const Duration(seconds: 5),
+                              ),
+                            );
+                          }
+                        }
                       },
                     ),
                   ],

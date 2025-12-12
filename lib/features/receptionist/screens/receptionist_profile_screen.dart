@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_homeopathy_app/features/auth/screens/login_screen.dart';
 import '../../../../core/services/auth_service.dart';
 import '../widgets/receptionist/receptionist_navbar.dart';
 
-class ReceptionistProfileScreen extends StatefulWidget {
+class ReceptionistProfileScreen extends StatelessWidget {
   const ReceptionistProfileScreen({super.key});
 
-  @override
-  State<ReceptionistProfileScreen> createState() => _ReceptionistProfileScreenState();
-}
-
-class _ReceptionistProfileScreenState extends State<ReceptionistProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final fbUser = FirebaseAuth.instance.currentUser;
@@ -30,394 +26,380 @@ class _ReceptionistProfileScreenState extends State<ReceptionistProfileScreen> {
               : (fbUser?.email ?? 'unknown@example.com');
           final role = 'Receptionist';
 
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 900;
-              return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.maybePop(context),
-                      child: const Padding(
-                        padding: EdgeInsets.only(bottom: 12),
-                        child: Text('← Back', style: TextStyle(color: Colors.blueAccent, fontSize: 14)),
-                      ),
-                    ),
-                    const Text(
-                      'My Profile',
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Manage your account information',
-                      style: TextStyle(color: Colors.black54),
-                    ),
-                    const SizedBox(height: 20),
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.maybePop(context),
+                  child: const Text(
+                    '← Back',
+                    style: TextStyle(color: Colors.blueAccent, fontSize: 14),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'My Profile',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Manage your account information',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
 
-                    // Main two-column area (responsive)
-                    if (isWide)
-                      Row(
+                // Main content
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth >= 900) {
+                      return Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Left side - Profile card
                           Expanded(
-                            flex: 4,
-                            child: _ProfileCard(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CircleAvatar(
-                                    radius: 44,
-                                    backgroundColor: const Color(0xFF5B86E5),
-                                    child: Text(
-                                      displayName.isNotEmpty ? displayName[0].toUpperCase() : 'R',
-                                      style: const TextStyle(fontSize: 36, color: Colors.white, fontWeight: FontWeight.w600),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    displayName,
-                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFE8F5FF),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: const Color(0xFFB9E2FF)),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(Icons.verified_user, color: Colors.blue, size: 16),
-                                        const SizedBox(width: 6),
-                                        Text(role, style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.w600)),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            flex: 1,
+                            child: _buildProfileCard(
+                              context,
+                              displayName,
+                              email,
+                              role,
+                              fbUser?.emailVerified ?? false,
                             ),
                           ),
                           const SizedBox(width: 20),
+                          // Right side - Info and actions
                           Expanded(
-                            flex: 7,
+                            flex: 2,
                             child: Column(
                               children: [
-                                _ProfileCard(
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text('Profile Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                                            SizedBox(height: 14),
-                                          ],
-                                        ),
-                                      ),
-                                      TextButton(
-                                        style: TextButton.styleFrom(
-                                          backgroundColor: const Color(0xFF2F6BFF),
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                        ),
-                                        onPressed: () {
-                                          // TODO: Implement edit profile
-                                        },
-                                        child: const Text('Edit Profile'),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                _ProfileCard(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _InfoRow(label: 'Email Address', value: email, trailing: const _VerifiedChip()),
-                                      const SizedBox(height: 10),
-                                      _InfoRow(label: 'Name', value: displayName),
-                                      const SizedBox(height: 10),
-                                      _InfoRow(label: 'Account Type', value: role),
-                                    ],
-                                  ),
-                                ),
-                                _ProfileCard(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text('Account Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                                      const SizedBox(height: 12),
-                                      _ActionRow(
-                                        icon: Icons.settings,
-                                        label: 'Settings',
-                                        onTap: () {
-                                          // TODO: Implement settings page
-                                        },
-                                      ),
-                                      const SizedBox(height: 8),
-                                      _ActionRow(
-                                        icon: Icons.logout,
-                                        label: 'Sign Out',
-                                        danger: true,
-                                        onTap: () async {
-                                          await FirebaseAuth.instance.signOut();
-                                          if (context.mounted) {
-                                            Navigator.of(context).popUntil((route) => route.isFirst);
-                                          }
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                _buildInfoCard(context, displayName, email, role),
+                                const SizedBox(height: 20),
+                                _buildActionsCard(context),
                               ],
                             ),
                           ),
                         ],
-                      )
-                    else
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      );
+                    } else {
+                      return Column(
                         children: [
-                          _ProfileCard(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                CircleAvatar(
-                                  radius: 44,
-                                  backgroundColor: const Color(0xFF5B86E5),
-                                  child: Text(
-                                    displayName.isNotEmpty ? displayName[0].toUpperCase() : 'R',
-                                    style: const TextStyle(fontSize: 36, color: Colors.white, fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  displayName,
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE8F5FF),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: const Color(0xFFB9E2FF)),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(Icons.verified_user, color: Colors.blue, size: 16),
-                                      const SizedBox(width: 6),
-                                      Text(role, style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.w600)),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                          _buildProfileCard(
+                            context,
+                            displayName,
+                            email,
+                            role,
+                            fbUser?.emailVerified ?? false,
                           ),
                           const SizedBox(height: 20),
-                          Column(
-                            children: [
-                              _ProfileCard(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Profile Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                                          SizedBox(height: 14),
-                                        ],
-                                      ),
-                                    ),
-                                    TextButton(
-                                      style: TextButton.styleFrom(
-                                        backgroundColor: const Color(0xFF2F6BFF),
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                      ),
-                                      onPressed: () {
-                                        // TODO: Implement edit profile
-                                      },
-                                      child: const Text('Edit Profile'),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              _ProfileCard(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _InfoRow(label: 'Email Address', value: email, trailing: const _VerifiedChip()),
-                                    const SizedBox(height: 10),
-                                    _InfoRow(label: 'Name', value: displayName),
-                                    const SizedBox(height: 10),
-                                    _InfoRow(label: 'Account Type', value: role),
-                                  ],
-                                ),
-                              ),
-                              _ProfileCard(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Account Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                                    const SizedBox(height: 12),
-                                    _ActionRow(
-                                      icon: Icons.settings,
-                                      label: 'Settings',
-                                      onTap: () {
-                                        // TODO: Implement settings page
-                                      },
-                                    ),
-                                    const SizedBox(height: 8),
-                                    _ActionRow(
-                                      icon: Icons.logout,
-                                      label: 'Sign Out',
-                                      danger: true,
-                                      onTap: () async {
-                                        await FirebaseAuth.instance.signOut();
-                                        if (context.mounted) {
-                                          Navigator.of(context).popUntil((route) => route.isFirst);
-                                        }
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+                          _buildInfoCard(context, displayName, email, role),
+                          const SizedBox(height: 20),
+                          _buildActionsCard(context),
                         ],
-                      ),
-                  ],
+                      );
+                    }
+                  },
                 ),
-              );
-            },
+              ],
+            ),
           );
         },
       ),
     );
   }
-}
 
-class _ProfileCard extends StatelessWidget {
-  final Widget child;
-  const _ProfileCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: const Color(0xFFE6E9EF)),
+  Widget _buildProfileCard(
+    BuildContext context,
+    String displayName,
+    String email,
+    String role,
+    bool isEmailVerified,
+  ) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.blue.shade100,
+              child: Text(
+                displayName.isNotEmpty ? displayName[0].toUpperCase() : 'R',
+                style: const TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              displayName,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.green.shade100,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                role,
+                style: TextStyle(
+                  color: Colors.green.shade800,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            if (!isEmailVerified) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.shade200),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.orange,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Email not verified',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              // TODO: Implement email verification
+                            },
+                            child: const Text(
+                              'Tap to resend verification email',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontSize: 12,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
-      child: child,
     );
   }
-}
 
-class _InfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final Widget? trailing;
-  const _InfoRow({required this.label, required this.value, this.trailing});
+  Widget _buildInfoCard(
+    BuildContext context,
+    String displayName,
+    String email,
+    String role,
+  ) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Profile Information',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const Divider(height: 24),
+            _buildInfoRow('Email Address', email, isVerified: true),
+            const SizedBox(height: 16),
+            _buildInfoRow('Name', displayName),
+            const SizedBox(height: 16),
+            _buildInfoRow('Role', role),
+          ],
+        ),
+      ),
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildActionsCard(BuildContext context) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Account Actions',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const Divider(height: 24),
+            _buildActionRow(
+              context,
+              icon: Icons.settings_outlined,
+              title: 'Settings',
+              onTap: () {
+                // TODO: Navigate to settings
+              },
+            ),
+            const Divider(height: 24),
+            _buildActionRow(
+              context,
+              icon: Icons.logout,
+              title: 'Sign Out',
+              isSignOut: true,
+              onTap: () async {
+                try {
+                  await FirebaseAuth.instance.signOut();
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error signing out: ${e.toString()}'),
+                        duration: const Duration(seconds: 5),
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, {bool isVerified = false}) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        SizedBox(
+          width: 120,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.grey,
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(color: Colors.black54)),
-              const SizedBox(height: 4),
-              Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (isVerified) ...[
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.green.shade200),
+                  ),
+                  child: const Text(
+                    'Verified',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
-        if (trailing != null) trailing!,
       ],
     );
   }
-}
 
-class _VerifiedChip extends StatelessWidget {
-  const _VerifiedChip();
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8FFF1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFBDEFD1)),
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.verified, color: Colors.green, size: 16),
-          SizedBox(width: 4),
-          Text('Verified', style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
-}
-
-class _ActionRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final bool danger;
-  const _ActionRow({required this.icon, required this.label, required this.onTap, this.danger = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: danger ? const Color(0xFFFFF1F1) : const Color(0xFFF8FAFF),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-          child: Row(
-            children: [
-              Icon(icon, color: danger ? Colors.red : Colors.black54),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: danger ? Colors.red : Colors.black87,
-                  ),
-                ),
+  Widget _buildActionRow(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    bool isSignOut = false,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSignOut ? Colors.red : Colors.blue,
+              size: 20,
+            ),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: isSignOut ? Colors.red : Colors.black87,
               ),
-              Icon(Icons.arrow_right, color: danger ? Colors.red : Colors.black45),
-            ],
-          ),
+            ),
+            const Spacer(),
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Colors.grey,
+            ),
+          ],
         ),
       ),
     );
