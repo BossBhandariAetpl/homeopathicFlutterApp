@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_homeopathy_app/features/auth/screens/login_screen.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../common/widgets/app_title_logo.dart';
 import '../../screens/patient_home_screen.dart';
@@ -150,9 +151,27 @@ class PatientNavbar extends StatelessWidget implements PreferredSizeWidget {
                       title: const Text("Sign Out"),
                       onTap: () async {
                         Navigator.pop(context); // close popup menu
-                        await _auth.signOut();
-                        if (context.mounted) {
-                          context.go('/login');
+                        try {
+                          await _auth.signOut();
+                          if (context.mounted) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                              (route) => false,
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Error signing out: ${e.toString()}',
+                                ),
+                                duration: const Duration(seconds: 5),
+                              ),
+                            );
+                          }
                         }
                       },
                     ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_homeopathy_app/features/auth/screens/login_screen.dart';
 import 'package:flutter_homeopathy_app/features/patient/widgets/patient/patient_navbar.dart';
 import '../../../../core/services/auth_service.dart';
 
@@ -14,16 +15,24 @@ class PatientProfileScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF4F5F7),
       appBar: PatientNavbar(),
       body: FutureBuilder<Map<String, dynamic>?>(
-        future: fbUser != null ? AuthService().getUserProfile(fbUser.uid) : Future.value(null),
+        future: fbUser != null
+            ? AuthService().getUserProfile(fbUser.uid)
+            : Future.value(null),
         builder: (context, snapshot) {
           final data = snapshot.data;
-          final displayName = (data != null && (data['name'] as String?)?.trim().isNotEmpty == true)
+          final displayName =
+              (data != null &&
+                  (data['name'] as String?)?.trim().isNotEmpty == true)
               ? (data['name'] as String)
-              : (fbUser?.displayName?.trim().isNotEmpty == true ? fbUser!.displayName! : 'User');
-          final email = (data != null && (data['email'] as String?)?.trim().isNotEmpty == true)
+              : (fbUser?.displayName?.trim().isNotEmpty == true
+                    ? fbUser!.displayName!
+                    : 'User');
+          final email =
+              (data != null &&
+                  (data['email'] as String?)?.trim().isNotEmpty == true)
               ? (data['email'] as String)
               : (fbUser?.email ?? 'unknown@example.com');
-          
+
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Column(
@@ -31,12 +40,19 @@ class PatientProfileScreen extends StatelessWidget {
               children: [
                 GestureDetector(
                   onTap: () => Navigator.maybePop(context),
-                  child: const Text('← Back', style: TextStyle(color: Colors.blueAccent, fontSize: 14)),
+                  child: const Text(
+                    '← Back',
+                    style: TextStyle(color: Colors.blueAccent, fontSize: 14),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 const Text(
                   'My Profile',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 const Text(
@@ -44,7 +60,7 @@ class PatientProfileScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 14, color: Colors.grey),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Main content
                 LayoutBuilder(
                   builder: (context, constraints) {
@@ -56,7 +72,12 @@ class PatientProfileScreen extends StatelessWidget {
                           // Left side - Profile card
                           Expanded(
                             flex: 1,
-                            child: _buildProfileCard(context, displayName, email, fbUser?.emailVerified ?? false),
+                            child: _buildProfileCard(
+                              context,
+                              displayName,
+                              email,
+                              fbUser?.emailVerified ?? false,
+                            ),
                           ),
                           const SizedBox(width: 20),
                           // Right side - Info and actions
@@ -75,7 +96,12 @@ class PatientProfileScreen extends StatelessWidget {
                     } else {
                       return Column(
                         children: [
-                          _buildProfileCard(context, displayName, email, fbUser?.emailVerified ?? false),
+                          _buildProfileCard(
+                            context,
+                            displayName,
+                            email,
+                            fbUser?.emailVerified ?? false,
+                          ),
                           const SizedBox(height: 20),
                           _buildInfoCard(context, displayName, email),
                           const SizedBox(height: 20),
@@ -93,12 +119,15 @@ class PatientProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileCard(BuildContext context, String displayName, String email, bool isEmailVerified) {
+  Widget _buildProfileCard(
+    BuildContext context,
+    String displayName,
+    String email,
+    bool isEmailVerified,
+  ) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -131,7 +160,11 @@ class PatientProfileScreen extends StatelessWidget {
               ),
               child: const Text(
                 'Patient',
-                style: TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  color: Colors.green,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             if (!isEmailVerified) ...[
@@ -145,7 +178,11 @@ class PatientProfileScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.orange,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Column(
@@ -153,7 +190,10 @@ class PatientProfileScreen extends StatelessWidget {
                         children: [
                           const Text(
                             'Email not verified',
-                            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13,
+                            ),
                           ),
                           GestureDetector(
                             onTap: () {
@@ -181,12 +221,14 @@ class PatientProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(BuildContext context, String displayName, String email) {
+  Widget _buildInfoCard(
+    BuildContext context,
+    String displayName,
+    String email,
+  ) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -194,7 +236,11 @@ class PatientProfileScreen extends StatelessWidget {
           children: [
             const Text(
               'Profile Information',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
             ),
             const Divider(height: 24),
             _buildInfoRow('Email Address', email),
@@ -227,9 +273,7 @@ class PatientProfileScreen extends StatelessWidget {
   Widget _buildActionsCard(BuildContext context) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -237,7 +281,11 @@ class PatientProfileScreen extends StatelessWidget {
           children: [
             const Text(
               'Account Actions',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
             ),
             const Divider(height: 24),
             _buildActionRow(
@@ -255,13 +303,25 @@ class PatientProfileScreen extends StatelessWidget {
               title: 'Sign Out',
               isSignOut: true,
               onTap: () async {
-                await FirebaseAuth.instance.signOut();
-                if (context.mounted) {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context, 
-                    '/welcome', 
-                    (route) => false,
-                  );
+                try {
+                  await FirebaseAuth.instance.signOut();
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error signing out: ${e.toString()}'),
+                        duration: const Duration(seconds: 5),
+                      ),
+                    );
+                  }
                 }
               },
             ),
