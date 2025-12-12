@@ -21,6 +21,6 @@ class _ReceptionistHomeScreenState
 
   @override
   Widget buildContent() {
-    return const SizedBox.shrink(); // Content is handled by the navbar
+    return super.buildContent();
   }
 }
