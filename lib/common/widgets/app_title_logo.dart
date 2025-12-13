@@ -1,7 +1,5 @@
 // lib/common/widgets/app_title_logo.dart
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 class AppTitleLogo extends StatelessWidget {
   const AppTitleLogo({super.key});
 
