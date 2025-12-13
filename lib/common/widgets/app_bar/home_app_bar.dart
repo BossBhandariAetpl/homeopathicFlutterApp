@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../features/auth/screens/login_screen.dart';
 import '../../../features/auth/screens/signup_screen.dart';
 import '../app_title_logo.dart';
