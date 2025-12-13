@@ -59,9 +59,8 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.white,
-      elevation: 0,
+      elevation: 1,
       automaticallyImplyLeading: false,
-      titleSpacing: 0,
       title: const AppTitleLogo(), // Use the new component
       actions: [_buildProfileButton(context)],
     );
